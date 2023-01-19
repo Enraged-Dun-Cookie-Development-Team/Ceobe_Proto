@@ -29,7 +29,7 @@ message LogRequest {
         WARN = 3;
         Error = 4;
     }
-    LogType type = 2;
+    LogType level = 2;
     bool manual = 3;
     string info = 4;
     string extra = 5;
