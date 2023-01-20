@@ -1,0 +1,37 @@
+name: go code generate
+
+on:
+  pull_request:
+    branches: [master]
+
+jobs:
+  code-gen:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: check out
+        uses: actions/checkout@v2
+
+      - name: Setup protoc
+        uses: arduino/setup-protoc@v1
+
+      - name: Setup Go environment
+        uses: actions/setup-go@v3
+
+      - run: go version
+      - run: go get -u github.com/golang/protobuf/proto
+      - run: go install google.golang.org/protobuf/cmd/protoc-gen-go
+      - run: go install go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
+
+      - run: mkdir go-out
+      - run: protoc --go_out=./go-out *.proto
+      - run: protoc --go_out=./go-out *.proto
+
+      - name: Add & Commit
+        uses: EndBug/add-and-commit@v9.1.1
+        with:
+          add: ./go-out/*
+          author_name: go-code-gen
+          author_email: go_code_gen@github.com
+          message: generate go proto files
+          new_branch: go-code-gen
