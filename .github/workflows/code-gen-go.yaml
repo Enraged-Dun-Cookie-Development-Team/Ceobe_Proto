@@ -21,7 +21,7 @@ jobs:
       - run: go version
 
       - run: go install google.golang.org/protobuf/cmd/protoc-gen-go
-      - run: go install go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
+      - run: go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 
       - run: mkdir go-out
       - run: protoc --go_out=./go-out *.proto
