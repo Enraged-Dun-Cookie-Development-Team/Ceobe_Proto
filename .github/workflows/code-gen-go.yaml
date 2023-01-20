@@ -3,8 +3,8 @@ name: go code generate
 on:
   pull_request:
     branches: [master]
-    paths: 
-      - "*.proto"
+      # paths: 
+    #   - "*.proto"
 
 jobs:
   code-gen:
@@ -12,7 +12,22 @@ jobs:
 
     steps:
       - name: check out
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: go-code-gen
+          path: ./go-code-gen
+
+      - name: remove old gen files
+        uses: EndBug/add-and-commit@v9.1.1
+        with:
+          remove: "-r ."
+          author_name: go-code-gen
+          author_email: go_code_gen@github.com
+          message: remove old generate files
+          cwd: ./go-code-gen
 
       - name: Setup protoc
         uses: arduino/setup-protoc@v1.1.2
@@ -25,14 +40,7 @@ jobs:
       - run: go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
       - run: go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 
-      - name: remove old gen files
-        uses: EndBug/add-and-commit@v9.1.1
-        with:
-          remove: "*.go"
-          author_name: go-code-gen
-          author_email: go_code_gen@github.com
-          message: remove old generate files
-          new_branch: go-code-gen
+
 
       - run: mkdir go-out
       - run: protoc --go_out=go-out *.proto
