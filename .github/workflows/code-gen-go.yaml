@@ -4,8 +4,8 @@ on:
   pull_request:
     branches:
       [master]
-      # paths:
-    #   - "*.proto"
+    paths:
+      - "*.proto"
 
 jobs:
   code-gen:

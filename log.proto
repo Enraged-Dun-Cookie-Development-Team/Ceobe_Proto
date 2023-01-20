@@ -39,8 +39,3 @@ message LogRequest {
 message LogResponse {
     bool success = 1;
 }
-
-message TestMessage{
-    string info = 1;
-    int32 code = 2;
-}
