@@ -62,7 +62,7 @@ jobs:
         run: protoc --go-grpc_out=. *.proto
         working-directory: ./master
 
-      - run: ls master
+      - run: ls .
 
       - run: cp -r ./master/* ./go-code-gen
 
