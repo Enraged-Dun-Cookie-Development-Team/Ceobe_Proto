@@ -42,9 +42,11 @@ jobs:
 
 
 
-      - run: mkdir go-out
-      - run: protoc --go_out=go-out *.proto
-      - run: protoc --go-grpc_out=go-out *.proto
+      - run: protoc --go_out=. *.proto
+      - run: protoc --go-grpc_out=. *.proto
+
+      - run: mv *.go ./go-code-gen
+      - run: mv LICENSE ./go-code-gen
 
       - name: Add & Commit
         uses: EndBug/add-and-commit@v9.1.1
@@ -54,3 +56,4 @@ jobs:
           author_email: go_code_gen@github.com
           message: generate go proto files
           new_branch: go-code-gen
+          cwd: ./go-code-gen
