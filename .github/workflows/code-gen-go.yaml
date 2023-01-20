@@ -28,18 +28,11 @@ jobs:
       - run: mkdir go-out
       - run: protoc --go_out=go-out *.proto
       - run: protoc --go_out=go-out *.proto
-
-      - name: Path lister action
-        uses: Rishabh510/Path-lister-action@1.0
-        with:
-          path: go-out
-          type: ".go"
-
-
+  
       - name: Add & Commit
         uses: EndBug/add-and-commit@v9.1.1
         with:
-          add: go-out
+          add: '*.go'
           author_name: go-code-gen
           author_email: go_code_gen@github.com
           message: generate go proto files
