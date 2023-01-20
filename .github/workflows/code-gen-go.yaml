@@ -2,8 +2,9 @@ name: go code generate
 
 on:
   pull_request:
-    branches: [master]
-      # paths: 
+    branches:
+      [master]
+      # paths:
     #   - "*.proto"
 
 jobs:
@@ -11,15 +12,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: check out
+      # 分别check out master 分支和 go 分支
+      - name: check out master
         uses: actions/checkout@v3
+        with:
+          path: ./master
 
-      - name: Checkout
+      - name: Checkout go branch
         uses: actions/checkout@v3
         with:
           ref: go-code-gen
           path: ./go-code-gen
 
+      # 如果 Go 分支不存在，推送一个
+      - name: checkout master as go code gen dir
+        if: failure()
+        uses: actions/checkout@v3
+        with:
+          path: ./go-code-gen
+
+      # 清空 go code gen 中的全部文件
       - name: remove old gen files
         uses: EndBug/add-and-commit@v9.1.1
         with:
@@ -27,12 +39,13 @@ jobs:
           author_name: go-code-gen
           author_email: go_code_gen@github.com
           message: remove old generate files
+          new_branch: go-code-gen
           cwd: ./go-code-gen
 
       - name: Setup protoc
         uses: arduino/setup-protoc@v1.1.2
         with:
-          version: '3.x'
+          version: "3.x"
 
       - name: Setup Go environment
         uses: actions/setup-go@v3
@@ -40,18 +53,21 @@ jobs:
       - run: go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
       - run: go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 
+      # 在master 中生成代码
+      - name: generate proto code
+        run: protoc --go_out=. *.proto
+        working-directory: ./master
 
+      - name: generate grpc code
+        run: protoc --go-grpc_out=. *.proto
+        working-directory: ./master
 
-      - run: protoc --go_out=. *.proto
-      - run: protoc --go-grpc_out=. *.proto
-
-      - run: mv *.go ./go-code-gen
-      - run: mv LICENSE ./go-code-gen
+      - run: cp -r ./master ./go-code-gen
 
       - name: Add & Commit
         uses: EndBug/add-and-commit@v9.1.1
         with:
-          add: '*.go'
+          add: "*.go"
           author_name: go-code-gen
           author_email: go_code_gen@github.com
           message: generate go proto files
