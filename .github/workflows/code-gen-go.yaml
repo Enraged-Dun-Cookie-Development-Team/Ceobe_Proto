@@ -55,13 +55,14 @@ jobs:
 
       # 在master 中生成代码
       - name: generate proto code
-        run: protoc --go_out=. *.proto
+        run: protoc --go_out=./ *.proto
         working-directory: ./master
 
       - name: generate grpc code
-        run: protoc --go-grpc_out=. *.proto
+        run: protoc --go-grpc_out=./ *.proto
         working-directory: ./master
 
+      - run: ls -l ./master
 
       - run: cp -r ./master/* ./go-code-gen
 
