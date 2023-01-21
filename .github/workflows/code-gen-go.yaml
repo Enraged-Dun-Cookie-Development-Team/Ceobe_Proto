@@ -82,12 +82,12 @@ jobs:
 
       - name: copy origin proto files
         run:
-          rm -rv ./go-code-gen/protos &&
+          rm -rv ./go-code-gen/protos/* &&
           cp -vr ./master/protos/* ./go-code-gen/protos
 
       - name: copy code gen
         run: 
-          rm -vr ./go-code-gen/code_gen &&
+          rm -vr ./go-code-gen/code_gen/* &&
           cp -vr ./master/code_gen/* ./go-code-gen/code_gen
 
       - name: Add & Commit
