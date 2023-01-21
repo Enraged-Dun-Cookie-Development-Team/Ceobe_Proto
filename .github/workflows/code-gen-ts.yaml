@@ -58,7 +58,7 @@ jobs:
 
       # 在master 中生成代码
       - name: generate grpc code
-        run: protoc --plugin=protoc-gen-ts_proto=.\node_modules\.bin\protoc-gen-ts_proto.cmd --ts_proto_out=.\pb *.proto
+        run: protoc --plugin=protoc-gen-ts_proto=.\node_modules\.bin\protoc-gen-ts_proto --ts_proto_out=.\pb *.proto
         working-directory: ./master
         if: failure() || success()
 
