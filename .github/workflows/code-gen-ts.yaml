@@ -31,6 +31,7 @@ jobs:
       # 清空 ts code gen 中的全部文件
       - name: remove old gen files
         uses: EndBug/add-and-commit@v9.1.1
+        if: failure() || success()
         with:
           remove: "-r ."
           author_name: ts-code-gen
@@ -41,12 +42,14 @@ jobs:
 
       - name: Setup protoc
         uses: arduino/setup-protoc@v1.1.2
+        if: failure() || success()
         with:
           version: "3.x"
 
       # 给当前服务器安装node
       - name: use node
         uses: actions/setup-node@v2
+        if: failure() || success()
         with:
           node-version: 16 # node版本
           cache: "npm"
@@ -57,13 +60,17 @@ jobs:
       - name: generate grpc code
         run: protoc --plugin=protoc-gen-ts_proto=.\node_modules\.bin\protoc-gen-ts_proto.cmd --ts_proto_out=.\pb .\log.proto
         working-directory: ./master
+        if: failure() || success()
 
       - run: ls -l ./master
+        if: failure() || success()
 
       - run: cp -r ./master/* ./ts-code-gen
+        if: failure() || success()
 
       - name: Add & Commit
         uses: EndBug/add-and-commit@v9.1.1
+        if: failure() || success()
         with:
           author_name: ts-code-gen
           author_email: ts_code_gen@github.com
