@@ -78,11 +78,11 @@ jobs:
       - name: copy code gen
         run: 
           mkdir -v ./ts-code-gen/pb &&
-          cp -vr ./master/pb/* ./pb/
+          cp -vr ./master/pb/* ./ts-code-gen/pb/
 
       # 删除多余的node生成的文件
       - name: remove node extra files
-        run: rm -rf ./node_modules *.json
+        run: rm -rf ./ts-code-gen/node_modules ./ts-code-gen/*.json
 
       - name: Add & Commit
         uses: EndBug/add-and-commit@v9.1.1
