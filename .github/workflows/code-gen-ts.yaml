@@ -1,0 +1,73 @@
+name: go code generate
+
+on:
+  pull_request:
+    branches:
+      [ master ]
+
+jobs:
+  code-gen:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 分别check out master 分支和 go 分支
+      - name: checkout master
+        uses: actions/checkout@v3
+        with:
+          path: ./master
+
+      - name: Checkout go branch
+        uses: actions/checkout@v3
+        with:
+          ref: ts-code-gen
+          path: ./ts-code-gen
+
+      # 如果 Ts 分支不存在，推送一个
+      - name: checkout master as ts code gen dir
+        if: failure()
+        uses: actions/checkout@v3
+        with:
+          path: ./ts-code-gen
+
+      # 清空 ts code gen 中的全部文件
+      - name: remove old gen files
+        uses: EndBug/add-and-commit@v9.1.1
+        with:
+          remove: "-r ."
+          author_name: ts-code-gen
+          author_email: ts_code_gen@github.com
+          message: remove old generate files
+          new_branch: ts-code-gen
+          cwd: ./ts-code-gen
+
+      - name: Setup protoc
+        uses: arduino/setup-protoc@v1.1.2
+        with:
+          version: "3.x"
+
+    # 给当前服务器安装node
+    - name: use node
+      uses: actions/setup-node@v2
+        with:
+          node-version: 16 # node版本
+          cache: "npm"
+
+      - run: npm i ts-proto
+
+      # 在master 中生成代码
+      - name: generate grpc code
+        run: protoc --plugin=protoc-gen-ts_proto=.\node_modules\.bin\protoc-gen-ts_proto.cmd --ts_proto_out=.\pb .\log.proto
+        working-directory: ./master
+
+      - run: ls -l ./master
+
+      - run: cp -r ./master/* ./ts-code-gen
+
+      - name: Add & Commit
+        uses: EndBug/add-and-commit@v9.1.1
+        with:
+          author_name: ts-code-gen
+          author_email: ts_code_gen@github.com
+          message: generate ts proto files
+          new_branch: ts-code-gen
+          cwd: ./ts-code-gen
