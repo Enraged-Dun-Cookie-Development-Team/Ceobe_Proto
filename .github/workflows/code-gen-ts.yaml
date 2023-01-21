@@ -9,13 +9,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 分别check out master 分支和 go 分支
+      # 分别check out master 分支和 ts 分支
       - name: checkout master
         uses: actions/checkout@v3
         with:
           path: ./master
 
-      - name: Checkout go branch
+      - name: Checkout ts branch
         uses: actions/checkout@v3
         with:
           ref: ts-code-gen
