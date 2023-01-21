@@ -1,7 +1,7 @@
 name: go code generate
 
 on:
-  pull_request:
+  push:
     branches: [ master ]
     paths:
         - "*.proto"
@@ -55,28 +55,17 @@ jobs:
           committer_email: GoCodeGenerator@github.com
           new_branch: go-code-gen
           cwd: ./master
+        
 
       # 清空 go code gen 中的Go文件
       # 当分支存在时，清空
       - name: remove old gen files
         uses: EndBug/add-and-commit@v9.1.1
         with:
-          remove: "-r ./code_gen"
+          remove: "['-r ./code_gen', '-r ./protos']"
           message: remove outdate generated files
-          committer_name: go-code-gen
-          committer_email: go_code_gen@github.com
-          push: false
-          cwd: ./go-code-gen
-
-      # 清空 go code gen 中的proto 文件
-      # 当分支存在时，清空
-      - name: remove old gen files
-        uses: EndBug/add-and-commit@v9.1.1
-        with:
-          remove: "-r ./protos"
-          message: remove outdate proto files
-          committer_name: go-code-gen
-          committer_email: go_code_gen@github.com
+          committer_name: GoCodeGenerator
+          committer_email: GoCodeGenerator@github.com
           push: false
           cwd: ./go-code-gen
 
