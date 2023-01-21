@@ -3,6 +3,8 @@ name: go code generate
 on:
   push:
     branches: [ master ]
+    paths:
+        - "*.proto"
 
 jobs:
   code-gen:
