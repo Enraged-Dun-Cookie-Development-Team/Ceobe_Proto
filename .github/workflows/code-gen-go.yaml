@@ -1,11 +1,8 @@
 name: go code generate
 
 on:
-  pull_request:
-    branches:
-      [master]
-    paths:
-      - "*.proto"
+  push:
+    branches: [ master ]
 
 jobs:
   code-gen:
