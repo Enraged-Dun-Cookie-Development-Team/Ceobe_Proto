@@ -57,7 +57,7 @@ jobs:
         working-directory: ./master
         if: failure() || success()
 
-      - run: ls -a ./master
+      - run: ls -a ./master/node_modules/.bin
         if: failure() || success()
 
       # 在master 中生成代码
