@@ -58,6 +58,7 @@ jobs:
         if: failure() || success()
 
       - run: mkdir pb
+        working-directory: ./master
         if: failure() || success()
 
       # 在master 中生成代码
@@ -67,6 +68,10 @@ jobs:
         if: failure() || success()
 
       - run: ls -l ./master
+        if: failure() || success()
+
+      - run: rm -rf node_modules *.json
+        working-directory: ./master
         if: failure() || success()
 
       - run: cp -r ./master/* ./ts-code-gen
