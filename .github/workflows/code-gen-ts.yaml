@@ -54,6 +54,10 @@ jobs:
           node-version: 16 # node版本
 
       - run: npm i ts-proto
+        working-directory: ./master
+        if: failure() || success()
+
+      - run: ls -a ./master
         if: failure() || success()
 
       # 在master 中生成代码
