@@ -6,7 +6,7 @@ on:
       [ master ]
 
 jobs:
-  code-gen:
+  code-ge-ts:
     runs-on: ubuntu-latest
 
     steps:
