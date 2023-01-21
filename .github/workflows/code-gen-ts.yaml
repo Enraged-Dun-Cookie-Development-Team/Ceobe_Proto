@@ -1,0 +1,88 @@
+name: ts code generate
+
+on:
+  pull_request:
+      branches: [ master ]
+
+jobs:
+  code-gen-ts:
+    runs-on: ubuntu-latest
+
+    steps:
+      # set up toolchain 
+      - name: Setup protoc
+        uses: arduino/setup-protoc@v1.1.2
+        with:
+          version: "3.x"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      
+      # 给当前服务器安装node
+      - name: use node
+        uses: actions/setup-node@v2
+        if: failure() || success()
+        with:
+          node-version: 16 # node版本
+
+      # 分别check out master 分支和 ts 分支
+      - name: checkout master
+        uses: actions/checkout@v3
+        with:
+          path: ./master
+
+      # 下载ts proto依赖
+      - run: npm i ts-proto
+        working-directory: ./master
+
+      # 在master 中生成代码
+      - name: generate proto code
+        run: 
+          mkdir -v pb &&
+          protoc --plugin=protoc-gen-ts_proto=./node_modules/.bin/protoc-gen-ts_proto --ts_proto_out=./pb protos/*.proto
+        working-directory: ./master
+
+      - name: Checkout ts branch
+        uses: actions/checkout@v3
+        with:
+          ref: ts-code-gen
+          path: ./ts-code-gen
+
+      # 如果 ts 分支不存在，那就使用master 的直接推送
+      - name: checkout master as ts code gen dir
+        if: failure()
+        uses: EndBug/add-and-commit@v9.1.1
+        with:
+          message: generate ts proto files
+          committer_name: TsCodeGenerator
+          committer_email: TsCodeGenerator@github.com
+          new_branch: ts-code-gen
+          cwd: ./master
+
+      # 清空 ts code gen 中的Ts文件
+      # 当分支存在时，清空
+      - name: remove old gen files
+        uses: EndBug/add-and-commit@v9.1.1
+        with:
+          remove: "['-r ./pb', '-r ./protos']"
+          message: remove outdate generated files
+          committer_name: TsCodeGenerator
+          committer_email: TsCodeGenerator@github.com
+          push: false
+          cwd: ./ts-code-gen
+
+      - name: copy origin proto files
+        run:
+          mkdir -v ./ts-code-gen/protos &&
+          cp -vr ./master/protos/* ./ts-code-gen/protos
+
+      - name: copy code gen
+        run: 
+          mkdir -v ./ts-code-gen/pb &&
+          cp -vr ./master/pb/* ./pb/
+
+      - name: Add & Commit
+        uses: EndBug/add-and-commit@v9.1.1
+        with:
+          message: generate ts proto files
+          committer_name: TsCodeGenerator
+          committer_email: TsCodeGenerator@github.com
+          cwd: ./ts-code-gen
