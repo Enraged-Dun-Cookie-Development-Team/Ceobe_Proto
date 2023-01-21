@@ -33,8 +33,8 @@ jobs:
       # 在master 中生成代码
       - name: generate proto code
         run: 
-          mkdir -v code_gen
-          protoc --go_out=./code_gen protos/*.proto
+          mkdir -v code_gen &&
+          protoc --go_out=./code_gen protos/*.proto &&
           protoc --go-grpc_out=./code_gen protos/*.proto
         working-directory: ./master
 
@@ -82,12 +82,12 @@ jobs:
 
       - name: copy origin proto files
         run:
-          rm -rv ./go-code-gen/protos
+          rm -rv ./go-code-gen/protos &&
           cp -vr ./master/protos/* ./go-code-gen/protos
 
       - name: copy code gen
         run: 
-          rm -vr ./go-code-gen/code_gen
+          rm -vr ./go-code-gen/code_gen &&
           cp -vr ./master/code_gen/* ./go-code-gen/code_gen
 
       - name: Add & Commit
