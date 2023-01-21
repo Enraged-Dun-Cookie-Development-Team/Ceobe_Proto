@@ -1,4 +1,4 @@
-name: go code generate
+name: ts code generate
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
       [ master ]
 
 jobs:
-  code-ge-ts:
+  code-gen-ts:
     runs-on: ubuntu-latest
 
     steps:
