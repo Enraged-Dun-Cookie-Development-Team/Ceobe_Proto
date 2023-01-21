@@ -15,4 +15,4 @@
   - `npm i protoc`
   - `npm i ts-proto`
 - 命令
-    = `cd Ceobe_Proto && npx protoc --plugin=protoc-gen-ts_proto=..\node_modules\.bin\protoc-gen-ts_proto.cmd --ts_proto_out=. .\log.proto`
+    - `cd Ceobe_Proto && npx protoc --plugin=protoc-gen-ts_proto=.\node_modules\.bin\protoc-gen-ts_proto.cmd --ts_proto_out=. .\*.proto`
