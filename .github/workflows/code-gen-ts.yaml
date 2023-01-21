@@ -56,7 +56,7 @@ jobs:
         with:
           node-version: 16 # node版本
           cache: "npm"
-          cache-dependency-path: package-lock.json
+          cache-dependency-path: ./package-lock.json
 
       - run: npm i ts-proto
         if: failure() || success()
