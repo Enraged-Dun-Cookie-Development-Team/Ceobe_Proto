@@ -1,0 +1,90 @@
+name: ts code generate
+
+on:
+  pull_request:
+      branches: [ master ]
+
+jobs:
+  code-gen-ts:
+    runs-on: ubuntu-latest
+
+    steps:
+      # set up toolchain 
+      - name: Setup protoc
+        uses: arduino/setup-protoc@v1.1.2
+        with:
+          version: "3.x"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.9
+
+      # 分别check out master 分支和 py 分支
+      - name: checkout master
+        uses: actions/checkout@v3
+        with:
+          path: ./master
+
+      # 下载py proto依赖
+      - run: 
+          pip install protobuf &&
+          pip install grpcio &&
+          pip install googleapis-common-protos && 
+          pip install grpcio-tools
+        working-directory: ./master
+
+      # 在master 中生成代码
+      - name: generate proto code
+        run: 
+          mkdir -v pb &&
+          python -m grpc_tools.protoc -I=./protos --python_out=./pb --grpc_python_out=./pb ./protos/*.proto
+        working-directory: ./master
+
+      - name: Checkout py branch
+        uses: actions/checkout@v3
+        with:
+          ref: py-code-gen
+          path: ./py-code-gen
+
+      # 如果 py 分支不存在，那就使用master 的直接推送
+      - name: checkout master as py code gen dir
+        if: failure()
+        uses: EndBug/add-and-commit@v9.1.1
+        with:
+          message: generate py proto files
+          committer_name: PyCodeGenerator
+          committer_email: PyCodeGenerator@github.com
+          new_branch: py-code-gen
+          cwd: ./master
+
+      # 清空 py code gen 中的Py文件
+      # 当分支存在时，清空
+      - name: remove old gen files
+        uses: EndBug/add-and-commit@v9.1.1
+        with:
+          remove: "['-r ./pb', '-r ./protos']"
+          message: remove outdate generated files
+          committer_name: PyCodeGenerator
+          committer_email: PyCodeGenerator@github.com
+          push: false
+          cwd: ./py-code-gen
+
+      - name: copy origin proto files
+        run:
+          mkdir -v ./py-code-gen/protos &&
+          cp -vr ./master/protos/* ./py-code-gen/protos
+
+      - name: copy code gen
+        run: 
+          mkdir -v ./py-code-gen/pb &&
+          cp -vr ./master/pb/* ./py-code-gen/pb/
+
+      - name: Add & Commit
+        uses: EndBug/add-and-commit@v9.1.1
+        with:
+          message: generate py proto files
+          committer_name: PyCodeGenerator
+          committer_email: PyCodeGenerator@github.com
+          cwd: ./py-code-gen
