@@ -16,6 +16,7 @@ jobs:
         uses: arduino/setup-protoc@v1.1.2
         with:
           version: "3.x"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Go environment
         uses: actions/setup-go@v3
@@ -31,7 +32,6 @@ jobs:
 
       # 在master 中生成代码
       - name: generate proto code
-        if: failure() || success()
         run: 
           mkdir -v code_gen
           protoc --go_out=./code_gen protos/*.proto
