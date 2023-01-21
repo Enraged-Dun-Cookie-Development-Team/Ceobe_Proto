@@ -1,46 +1,17 @@
 name: go code generate
 
 on:
-  push:
+  pull_request:
     branches: [ master ]
-    paths:
-        - "*.proto"
+    # paths:
+        # - "*.proto"
 
 jobs:
   code-gen:
     runs-on: ubuntu-latest
 
     steps:
-      # 分别check out master 分支和 go 分支
-      - name: check out master
-        uses: actions/checkout@v3
-        with:
-          path: ./master
-
-      - name: Checkout go branch
-        uses: actions/checkout@v3
-        with:
-          ref: go-code-gen
-          path: ./go-code-gen
-
-      # 如果 Go 分支不存在，推送一个
-      - name: checkout master as go code gen dir
-        if: failure()
-        uses: actions/checkout@v3
-        with:
-          path: ./go-code-gen
-
-      # 清空 go code gen 中的全部文件
-      - name: remove old gen files
-        uses: EndBug/add-and-commit@v9.1.1
-        with:
-          remove: "-r ."
-          author_name: go-code-gen
-          author_email: go_code_gen@github.com
-          message: remove old generate files
-          new_branch: go-code-gen
-          cwd: ./go-code-gen
-
+      # set up toolchain 
       - name: Setup protoc
         uses: arduino/setup-protoc@v1.1.2
         with:
@@ -52,24 +23,77 @@ jobs:
       - run: go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
       - run: go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 
+      # check out master 分支
+      - name: check out master
+        uses: actions/checkout@v3
+        with:
+          path: ./master
+
       # 在master 中生成代码
       - name: generate proto code
-        run: protoc --go_out=./ *.proto
+        if: failure() || success()
+        run: 
+          mkdir -v code_gen
+          protoc --go_out=./code_gen protos/*.proto
+          protoc --go-grpc_out=./code_gen protos/*.proto
         working-directory: ./master
 
-      - name: generate grpc code
-        run: protoc --go-grpc_out=./ *.proto
-        working-directory: ./master
+      # 试图checkout go 分支
+      - name: Checkout go branch
+        uses: actions/checkout@v3
+        with:
+          ref: go-code-gen
+          path: ./go-code-gen
 
-      - run: ls -l ./master
+      # 如果 Go 分支不存在，那就使用master 的直接推送
+      - name: checkout master as go code gen dir
+        if: failure()
+        uses: EndBug/add-and-commit@v9.1.1
+        with:
+          message: generate go proto files
+          committer_name: GoCodeGenerator
+          committer_email: GoCodeGenerator@github.com
+          new_branch: go-code-gen
+          cwd: ./master
 
-      - run: cp -r ./master/* ./go-code-gen
+      # 清空 go code gen 中的Go文件
+      # 当分支存在时，清空
+      - name: remove old gen files
+        uses: EndBug/add-and-commit@v9.1.1
+        with:
+          remove: "-r ./code_gen"
+          message: remove outdate generated files
+          committer_name: go-code-gen
+          committer_email: go_code_gen@github.com
+          push: false
+          cwd: ./go-code-gen
+
+      # 清空 go code gen 中的proto 文件
+      # 当分支存在时，清空
+      - name: remove old gen files
+        uses: EndBug/add-and-commit@v9.1.1
+        with:
+          remove: "-r ./protos"
+          message: remove outdate proto files
+          committer_name: go-code-gen
+          committer_email: go_code_gen@github.com
+          push: false
+          cwd: ./go-code-gen
+
+      - name: copy origin proto files
+        run:
+          rm -rv ./go-code-gen/protos
+          cp -vr ./master/protos/* ./go-code-gen/protos
+
+      - name: copy code gen
+        run: 
+          rm -vr ./go-code-gen/code_gen
+          cp -vr ./master/code_gen/* ./go-code-gen/code_gen
 
       - name: Add & Commit
         uses: EndBug/add-and-commit@v9.1.1
         with:
-          author_name: go-code-gen
-          author_email: go_code_gen@github.com
           message: generate go proto files
-          new_branch: go-code-gen
+          committer_name: GoCodeGenerator
+          committer_email: GoCodeGenerator@github.com
           cwd: ./go-code-gen
