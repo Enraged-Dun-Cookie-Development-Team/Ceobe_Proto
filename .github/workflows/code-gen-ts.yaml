@@ -2,8 +2,7 @@ name: ts code generate
 
 on:
   pull_request:
-    branches:
-      [ master ]
+      branches: [ master ]
 
 jobs:
   code-gen-ts:
