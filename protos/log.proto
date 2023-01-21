@@ -39,3 +39,7 @@ message LogRequest {
 message LogResponse {
     bool success = 1;
 }
+
+message Test{
+    bool test = 1;
+}
