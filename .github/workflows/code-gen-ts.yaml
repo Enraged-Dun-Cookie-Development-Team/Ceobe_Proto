@@ -46,6 +46,9 @@ jobs:
         with:
           version: "3.x"
 
+      - run: touch package.json
+        if: failure() || success()
+
       # 给当前服务器安装node
       - name: use node
         uses: actions/setup-node@v2
@@ -53,9 +56,10 @@ jobs:
         with:
           node-version: 16 # node版本
           cache: "npm"
-          cache-dependency-path: subdir/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - run: npm i ts-proto
+        if: failure() || success()
 
       # 在master 中生成代码
       - name: generate grpc code
