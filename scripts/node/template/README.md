@@ -34,7 +34,7 @@ client.pushLog({
 
 // promise版本
 // 包装后的client2可以通过client2.$拿到原始client，即满足：client2.$ === client
-const client2 = promisify(client);
+const client2 = promisifyClient(client);
 await client2.pushLog({
   server: LogRequest_ServeType.FETCHER,
   level: LogRequest_LogType.TRACE,
