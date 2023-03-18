@@ -14,7 +14,7 @@ export async function grpcClientWaitForReady(client: grpc.Client, timeout: numbe
   });
 }
 
-export { promisify } from './promisified-grpc-client';
+export { promisifyClient } from './promisified-grpc-client';
 
 export { LogRequest, LogRequest_ServeType, LogRequest_LogType, LogResponse } from './pb/log';
 export { LogClient } from './pb/log';

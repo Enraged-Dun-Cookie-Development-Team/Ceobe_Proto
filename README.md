@@ -1,7 +1,21 @@
+安装包
+```shell
+git submodule add -b ts-code-gen https://github.com/Enraged-Dun-Cookie-Development-Team/Ceobe_Proto.git ceobe_grpc
+npm i ./ceobe_grpc
+# 或者 npm i file:ceobe_grpc
+```
+
+更新包
+```shell
+git submodule update --remote
+```
+
 使用示例
 ```typescript
 import {credentials,grpcClientWaitForReady} from './index';
 import {LogClient} from './index';
+import { credentials, LogClient } from './ceobe_grpc';
+
 const client = new LogClient("127.0.0.1:8000", credentials);
 
 await grpcClientWaitForReady(client);

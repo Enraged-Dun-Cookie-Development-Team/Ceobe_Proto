@@ -10,7 +10,7 @@ export type Promisified<C> = { $: C; } & {
   [prop in Exclude<keyof C, keyof Client>]: (C[prop] extends OriginalCall<infer T, infer U> ? PromisifiedCall<T, U> : never);
 }
 
-export function promisify<C extends Client>(client: C): Promisified<C> {
+export function promisifyClient<C extends Client>(client: C): Promisified<C> {
   return new Proxy(client,
     {
       get: (target: C, descriptor) => {
