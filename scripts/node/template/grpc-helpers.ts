@@ -14,4 +14,4 @@ export async function grpcClientWaitForReady(client: grpc.Client, timeout: numbe
   });
 }
 
-export { promisify } from './promisified-grpc-client';
+export { promisifyClient } from './promisified-grpc-client';
