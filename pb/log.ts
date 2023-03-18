@@ -1,7 +1,17 @@
 /* eslint-disable */
-import * as _m0 from "protobufjs/minimal";
-
-export const protobufPackage = "pb";
+import {
+  CallOptions,
+  ChannelCredentials,
+  Client,
+  ClientOptions,
+  ClientUnaryCall,
+  handleUnaryCall,
+  makeGenericClientConstructor,
+  Metadata,
+  ServiceError,
+  UntypedServiceImplementation,
+} from "@grpc/grpc-js";
+import _m0 from "protobufjs/minimal";
 
 /** 版本声明，使用Protocol Buffers v3版本 */
 
@@ -22,43 +32,6 @@ export enum LogRequest_ServeType {
   UNRECOGNIZED = -1,
 }
 
-export function logRequest_ServeTypeFromJSON(object: any): LogRequest_ServeType {
-  switch (object) {
-    case 0:
-    case "RUST":
-      return LogRequest_ServeType.RUST;
-    case 1:
-    case "FETCHER":
-      return LogRequest_ServeType.FETCHER;
-    case 2:
-    case "ANALYZER":
-      return LogRequest_ServeType.ANALYZER;
-    case 3:
-    case "SCHEDULER":
-      return LogRequest_ServeType.SCHEDULER;
-    case -1:
-    case "UNRECOGNIZED":
-    default:
-      return LogRequest_ServeType.UNRECOGNIZED;
-  }
-}
-
-export function logRequest_ServeTypeToJSON(object: LogRequest_ServeType): string {
-  switch (object) {
-    case LogRequest_ServeType.RUST:
-      return "RUST";
-    case LogRequest_ServeType.FETCHER:
-      return "FETCHER";
-    case LogRequest_ServeType.ANALYZER:
-      return "ANALYZER";
-    case LogRequest_ServeType.SCHEDULER:
-      return "SCHEDULER";
-    case LogRequest_ServeType.UNRECOGNIZED:
-    default:
-      return "UNRECOGNIZED";
-  }
-}
-
 export enum LogRequest_LogType {
   TRACE = 0,
   DEBUG = 1,
@@ -66,48 +39,6 @@ export enum LogRequest_LogType {
   WARN = 3,
   Error = 4,
   UNRECOGNIZED = -1,
-}
-
-export function logRequest_LogTypeFromJSON(object: any): LogRequest_LogType {
-  switch (object) {
-    case 0:
-    case "TRACE":
-      return LogRequest_LogType.TRACE;
-    case 1:
-    case "DEBUG":
-      return LogRequest_LogType.DEBUG;
-    case 2:
-    case "INFO":
-      return LogRequest_LogType.INFO;
-    case 3:
-    case "WARN":
-      return LogRequest_LogType.WARN;
-    case 4:
-    case "Error":
-      return LogRequest_LogType.Error;
-    case -1:
-    case "UNRECOGNIZED":
-    default:
-      return LogRequest_LogType.UNRECOGNIZED;
-  }
-}
-
-export function logRequest_LogTypeToJSON(object: LogRequest_LogType): string {
-  switch (object) {
-    case LogRequest_LogType.TRACE:
-      return "TRACE";
-    case LogRequest_LogType.DEBUG:
-      return "DEBUG";
-    case LogRequest_LogType.INFO:
-      return "INFO";
-    case LogRequest_LogType.WARN:
-      return "WARN";
-    case LogRequest_LogType.Error:
-      return "Error";
-    case LogRequest_LogType.UNRECOGNIZED:
-    default:
-      return "UNRECOGNIZED";
-  }
 }
 
 /** 响应消息 */
@@ -169,26 +100,6 @@ export const LogRequest = {
     return message;
   },
 
-  fromJSON(object: any): LogRequest {
-    return {
-      server: isSet(object.server) ? logRequest_ServeTypeFromJSON(object.server) : 0,
-      level: isSet(object.level) ? logRequest_LogTypeFromJSON(object.level) : 0,
-      manual: isSet(object.manual) ? Boolean(object.manual) : false,
-      info: isSet(object.info) ? String(object.info) : "",
-      extra: isSet(object.extra) ? String(object.extra) : "",
-    };
-  },
-
-  toJSON(message: LogRequest): unknown {
-    const obj: any = {};
-    message.server !== undefined && (obj.server = logRequest_ServeTypeToJSON(message.server));
-    message.level !== undefined && (obj.level = logRequest_LogTypeToJSON(message.level));
-    message.manual !== undefined && (obj.manual = message.manual);
-    message.info !== undefined && (obj.info = message.info);
-    message.extra !== undefined && (obj.extra = message.extra);
-    return obj;
-  },
-
   create<I extends Exact<DeepPartial<LogRequest>, I>>(base?: I): LogRequest {
     return LogRequest.fromPartial(base ?? {});
   },
@@ -234,16 +145,6 @@ export const LogResponse = {
     return message;
   },
 
-  fromJSON(object: any): LogResponse {
-    return { success: isSet(object.success) ? Boolean(object.success) : false };
-  },
-
-  toJSON(message: LogResponse): unknown {
-    const obj: any = {};
-    message.success !== undefined && (obj.success = message.success);
-    return obj;
-  },
-
   create<I extends Exact<DeepPartial<LogResponse>, I>>(base?: I): LogResponse {
     return LogResponse.fromPartial(base ?? {});
   },
@@ -256,41 +157,53 @@ export const LogResponse = {
 };
 
 /** 定义服务 */
-export interface Log {
+export type LogService = typeof LogService;
+export const LogService = {
   /** 推送日志 */
-  PushLog(request: LogRequest): Promise<LogResponse>;
+  pushLog: {
+    path: "/pb.Log/PushLog",
+    requestStream: false,
+    responseStream: false,
+    requestSerialize: (value: LogRequest) => Buffer.from(LogRequest.encode(value).finish()),
+    requestDeserialize: (value: Buffer) => LogRequest.decode(value),
+    responseSerialize: (value: LogResponse) => Buffer.from(LogResponse.encode(value).finish()),
+    responseDeserialize: (value: Buffer) => LogResponse.decode(value),
+  },
+} as const;
+
+export interface LogServer extends UntypedServiceImplementation {
+  /** 推送日志 */
+  pushLog: handleUnaryCall<LogRequest, LogResponse>;
 }
 
-export class LogClientImpl implements Log {
-  private readonly rpc: Rpc;
-  private readonly service: string;
-  constructor(rpc: Rpc, opts?: { service?: string }) {
-    this.service = opts?.service || "pb.Log";
-    this.rpc = rpc;
-    this.PushLog = this.PushLog.bind(this);
-  }
-  PushLog(request: LogRequest): Promise<LogResponse> {
-    const data = LogRequest.encode(request).finish();
-    const promise = this.rpc.request(this.service, "PushLog", data);
-    return promise.then((data) => LogResponse.decode(new _m0.Reader(data)));
-  }
+export interface LogClient extends Client {
+  /** 推送日志 */
+  pushLog(request: LogRequest, callback: (error: ServiceError | null, response: LogResponse) => void): ClientUnaryCall;
+  pushLog(
+    request: LogRequest,
+    metadata: Metadata,
+    callback: (error: ServiceError | null, response: LogResponse) => void,
+  ): ClientUnaryCall;
+  pushLog(
+    request: LogRequest,
+    metadata: Metadata,
+    options: Partial<CallOptions>,
+    callback: (error: ServiceError | null, response: LogResponse) => void,
+  ): ClientUnaryCall;
 }
 
-interface Rpc {
-  request(service: string, method: string, data: Uint8Array): Promise<Uint8Array>;
-}
+export const LogClient = makeGenericClientConstructor(LogService, "pb.Log") as unknown as {
+  new (address: string, credentials: ChannelCredentials, options?: Partial<ClientOptions>): LogClient;
+  service: typeof LogService;
+};
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
-export type DeepPartial<T> = T extends Builtin ? T
+type DeepPartial<T> = T extends Builtin ? T
   : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
   : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
   : Partial<T>;
 
 type KeysOfUnion<T> = T extends T ? keyof T : never;
-export type Exact<P, I extends P> = P extends Builtin ? P
+type Exact<P, I extends P> = P extends Builtin ? P
   : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
-
-function isSet(value: any): boolean {
-  return value !== null && value !== undefined;
-}

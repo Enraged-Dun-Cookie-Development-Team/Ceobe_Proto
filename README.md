@@ -1,18 +1,32 @@
-# Ceobe_Proto
+使用示例
+```typescript
+import {credentials,grpcClientWaitForReady} from './index';
+import {LogClient} from './index';
+const client = new LogClient("127.0.0.1:8000", credentials);
 
-## GO
+await grpcClientWaitForReady(client);
 
-- 依赖
-  - `go install google.golang.org/protobuf/cmd/protoc-gen-go@latest`
-  - `go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2`
-- 命令
-  - `protoc --go_out=<output-path> *.proto`
-  - `protoc --go-grpc_out=<output-path> *.proto`
+// callback版本
+client.pushLog({
+  server: LogRequest_ServeType.FETCHER,
+  level: LogRequest_LogType.TRACE,
+  manual: true,
+  info: "TEST_INFO",
+  extra: "TEST_EXTRA",
+}, (err, res) => {
+  console.log(err);
+  console.log(res);
+});
 
-## nodejs
+// promise版本
+// 包装后的client2可以通过client2.$拿到原始client，即满足：client2.$ === client
+const client2 = promisify(client);
+await client2.pushLog({
+  server: LogRequest_ServeType.FETCHER,
+  level: LogRequest_LogType.TRACE,
+  manual: true,
+  info: "TEST_INFO",
+  extra: "TEST_EXTRA",
+});
 
-- 依赖
-  - `npm i protoc`
-  - `npm i ts-proto`
-- 命令
-    - `cd Ceobe_Proto && npx protoc --plugin=protoc-gen-ts_proto=.\node_modules\.bin\protoc-gen-ts_proto.cmd --ts_proto_out=. .\*.proto`
+```
