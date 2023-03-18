@@ -2,7 +2,7 @@
 
 import { Client, ServiceError, Metadata, CallOptions, ClientUnaryCall } from '@grpc/grpc-js';
 
-type OriginalCall<T, U> = (request: T, metadata: Metadata, options: Partial<CallOptions>, callback: (error: ServiceError, res: U) => void) => ClientUnaryCall;
+type OriginalCall<T, U> = (request: T, metadata: Metadata, options: Partial<CallOptions>, callback: (error: ServiceError | null, res: U) => void) => ClientUnaryCall;
 
 type PromisifiedCall<T, U> = ((request: T, metadata?: Metadata, options?: Partial<CallOptions>) => Promise<U>);
 
