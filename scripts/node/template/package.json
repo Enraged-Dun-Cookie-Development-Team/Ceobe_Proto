@@ -1,4 +1,5 @@
 {
+  "name": "ceobe_grpc",
   "type": "module",
   "main": "index.ts",
   "dependencies": {
