@@ -12,8 +12,8 @@ git submodule update --remote
 
 使用示例
 ```typescript
-import {credentials,grpcClientWaitForReady} from './index';
-import {LogClient} from './index';
+import { credentials,grpcClientWaitForReady } from './index';
+import { LogClient } from './index';
 import { credentials, LogClient } from './ceobe_grpc';
 
 const client = new LogClient("127.0.0.1:8000", credentials);
