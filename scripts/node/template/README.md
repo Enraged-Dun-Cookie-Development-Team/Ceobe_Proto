@@ -7,7 +7,7 @@ npm i ./ceobe_grpc
 
 更新包
 ```shell
-git submodule update --remote
+git submodule update --remote --force
 ```
 
 使用示例
