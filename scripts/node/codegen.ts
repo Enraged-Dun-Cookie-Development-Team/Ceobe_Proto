@@ -8,7 +8,7 @@ import { ProtoMetadata } from './proto-types';
 
 // ts-node启动的时候第一个参数从索引2开始
 const workingDir = path.resolve(process.argv[2]);
-const outputDir = path.resolve(process.argv[2]);
+const outputDir = path.resolve(process.argv[3]);
 const protosDir = path.join(workingDir, 'protos');
 
 function runProtoc() {
@@ -86,9 +86,9 @@ fs.rmSync('output/pb_meta', {recursive: true, force: true});
 
 // 清理旧文件
 fs.readdirSync(outputDir)
-  .filter(f => !['node_modules', 'scripts', 'protos', 'LICENSE'].includes(f))
+  .filter(f => !['node_modules', 'scripts', 'protos', 'LICENSE', '.git'].includes(f))
   .map(f => path.join(outputDir, f))
-  .forEach(f => fse.rmSync(f));
+  .forEach(f => fse.rmSync(f, {recursive: true, force: true}));
 // 移动新文件
 fse.copySync('output', outputDir, {
   overwrite: true,

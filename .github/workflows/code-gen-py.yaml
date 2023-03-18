@@ -1,4 +1,4 @@
-name: ts code generate
+name: py code generate
 
 on:
   push:
@@ -11,13 +11,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # set up toolchain 
+      # set up toolchain
       - name: Setup protoc
         uses: arduino/setup-protoc@v1.1.2
         with:
           version: "3.x"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Set up Python
         uses: actions/setup-python@v1
         with:
@@ -30,7 +30,7 @@ jobs:
           path: ./master
 
       # 下载py proto依赖
-      - run: 
+      - run:
           pip install protobuf &&
           pip install grpcio &&
           pip install googleapis-common-protos && 
@@ -39,7 +39,7 @@ jobs:
 
       # 在master 中生成代码
       - name: generate proto code
-        run: 
+        run:
           mkdir -v pb &&
           python -m grpc_tools.protoc -I=./protos --python_out=./pb --grpc_python_out=./pb ./protos/*.proto
         working-directory: ./master
@@ -79,7 +79,7 @@ jobs:
           cp -vr ./master/protos/* ./py-code-gen/protos
 
       - name: copy code gen
-        run: 
+        run:
           mkdir -v ./py-code-gen/pb &&
           cp -vr ./master/pb/* ./py-code-gen/pb/
 
