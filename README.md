@@ -11,8 +11,4 @@
 
 ## nodejs
 
-- 依赖
-  - `npm i protoc`
-  - `npm i ts-proto`
-- 命令
-    - `cd Ceobe_Proto && npx protoc --plugin=protoc-gen-ts_proto=.\node_modules\.bin\protoc-gen-ts_proto.cmd --ts_proto_out=. .\*.proto`
+[使用教程](scripts/node/template/README.md)
