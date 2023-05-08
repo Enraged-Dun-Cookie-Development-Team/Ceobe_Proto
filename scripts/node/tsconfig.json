@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "Node",
+    "module": "ESNext",
+    "target": "ESNext",
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "allowJs": false,
+    "strict": true,
+    "declaration": true,
+    "allowSyntheticDefaultImports": true,
+    "isolatedModules": true
+  }
+}
