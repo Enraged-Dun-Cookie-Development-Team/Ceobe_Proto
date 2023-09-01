@@ -53,7 +53,7 @@ runs:
       run: git checkout -b update-grpc-build${{ github.run_number }}
       shell: bash
     - name: 更新子模块：${{ inputs.submodule_path }}
-      run: git submodule update --remote ${{ inputs.submodule_path }}
+      run: git submodule update --init --remote ${{ inputs.submodule_path }}
       shell: bash
     - name: 提交commit
       id: commit-submodule-update
