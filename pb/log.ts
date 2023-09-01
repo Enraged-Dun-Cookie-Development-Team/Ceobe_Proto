@@ -37,7 +37,7 @@ export enum LogRequest_LogType {
   DEBUG = 1,
   INFO = 2,
   WARN = 3,
-  Error = 4,
+  ERROR = 4,
   UNRECOGNIZED = -1,
 }
 
