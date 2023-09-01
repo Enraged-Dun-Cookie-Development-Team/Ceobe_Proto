@@ -54,6 +54,7 @@ jobs:
         # 因为一开始没有这个文件，所以写入一段空内容
         run: |
           echo "" >> ./codegen_info
+          cat ./codegen_info
           cat ./codegen_info >> "$GITHUB_OUTPUT"
 
       - name: write codegen info
