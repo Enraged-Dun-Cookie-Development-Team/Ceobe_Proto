@@ -20,6 +20,7 @@ jobs:
     if: ${{ !cancelled() }}
     needs: [code-gen-ts, code-gen-py, code-gen-go]
     strategy:
+      # 避免并发请求触发Github的API速率限制
       max-parallel: 1
       matrix:
         include:
