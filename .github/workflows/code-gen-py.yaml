@@ -5,7 +5,7 @@ on:
   workflow_call:
 
 jobs:
-  code-gen-ts:
+  code-gen-py:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,7 +16,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: 3.9
 
@@ -25,6 +25,12 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: ./master
+
+      - name: Checkout py branch
+        uses: actions/checkout@v3
+        with:
+          ref: py-code-gen
+          path: ./py-code-gen
 
       # 下载py proto依赖
       - run:
@@ -41,34 +47,11 @@ jobs:
           python -m grpc_tools.protoc -I=./protos --python_out=./pb --grpc_python_out=./pb ./protos/*.proto
         working-directory: ./master
 
-      - name: Checkout py branch
-        uses: actions/checkout@v3
-        with:
-          ref: py-code-gen
-          path: ./py-code-gen
-
-      # 如果 py 分支不存在，那就使用master 的直接推送
-      - name: checkout master as py code gen dir
-        if: failure()
-        uses: EndBug/add-and-commit@v9.1.1
-        with:
-          message: generate py proto files
-          committer_name: PyCodeGenerator
-          committer_email: PyCodeGenerator@github.com
-          new_branch: py-code-gen
-          cwd: ./master
-
-      # 清空 py code gen 中的Py文件
-      # 当分支存在时，清空
+      # 清理 py code gen 中的Py文件
       - name: remove old gen files
-        uses: EndBug/add-and-commit@v9.1.1
-        with:
-          remove: "['-r ./pb', '-r ./protos']"
-          message: remove outdate generated files
-          committer_name: PyCodeGenerator
-          committer_email: PyCodeGenerator@github.com
-          push: false
-          cwd: ./py-code-gen
+        run: |
+          rm -rf ./py-code-gen/pb
+          rm -rf ./py-code-gen/protos
 
       - name: copy origin proto files
         run:
@@ -84,5 +67,5 @@ jobs:
         uses: EndBug/add-and-commit@v9.1.1
         with:
           default_author: github_actions
-          message: '[bot] update py-code-gen'
+          message: '[CI] update py-code-gen'
           cwd: ./py-code-gen
