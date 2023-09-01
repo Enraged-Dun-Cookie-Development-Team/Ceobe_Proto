@@ -25,6 +25,7 @@ jobs:
       - name: check out master
         uses: actions/checkout@v3
         with:
+          ref: master
           path: ./master
 
       # checkout go 分支

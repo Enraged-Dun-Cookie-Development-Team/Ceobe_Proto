@@ -7,7 +7,6 @@ on:
         description: 如果代码生成任务跳过了，是否仍要创建PR
         type: boolean
         default: false
-        required: true
   push:
     branches: [ auto-update-codegen ]
 #    paths:
@@ -40,7 +39,7 @@ jobs:
     uses: ./.github/workflows/code-gen-py.yml
   code-gen-go:
     needs: check-cache
-    if: needs.check-cache.outputs.cache-hit != 'true'
+    #if: needs.check-cache.outputs.cache-hit != 'true'
     uses: ./.github/workflows/code-gen-go.yml
 
   after-codegen:

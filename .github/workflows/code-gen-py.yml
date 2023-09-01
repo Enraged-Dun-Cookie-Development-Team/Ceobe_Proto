@@ -24,6 +24,7 @@ jobs:
       - name: checkout master
         uses: actions/checkout@v3
         with:
+          ref: master
           path: ./master
 
       - name: Checkout py branch

@@ -34,12 +34,6 @@ jobs:
           ref: ts-code-gen
           path: ./ts-code-gen
 
-      - name: Checkout ts-code-gen branch
-        uses: actions/checkout@v3
-        with:
-          ref: ts-code-gen
-          path: ./ts-code-gen
-
       # 清理workflow文件
       - name: remove old gen files
         run: |
