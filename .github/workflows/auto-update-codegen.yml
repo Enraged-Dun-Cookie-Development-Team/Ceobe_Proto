@@ -8,16 +8,34 @@ on:
 #      - "**/*.proto"
 
 jobs:
-#  code-gen-ts:
-#    uses: ./.github/workflows/code-gen-ts.yaml
-#  code-gen-py:
-#    uses: ./.github/workflows/code-gen-py.yaml
-#  code-gen-go:
-#    uses: ./.github/workflows/code-gen-go.yaml
+  check-cache:
+    runs-on: ubuntu-latest
+    outputs:
+      cache-hit: ${{ steps.check-proto-cache.outputs.cache-hit }}
+    steps:
+      - name: Check Cache
+        id: check-proto-cache
+        uses: actions/cache@v3
+        with:
+          key: proto-${{ hashFiles('**/*.proto') }}
+      - run: echo "cache-hit=${{ steps.check-proto-cache.outputs.cache-hit }}" >> "$GITHUB_OUTPUT"
+  code-gen-ts:
+    needs: check-cache
+    if: needs.check-cache.outputs.cache-hit != 'true'
+    uses: ./.github/workflows/code-gen-ts.yaml
+  code-gen-py:
+    needs: check-cache
+    if: needs.check-cache.outputs.cache-hit != 'true'
+    uses: ./.github/workflows/code-gen-py.yaml
+  code-gen-go:
+    needs: check-cache
+    if: needs.check-cache.outputs.cache-hit != 'true'
+    uses: ./.github/workflows/code-gen-go.yaml
 
   create-pr:
     runs-on: ubuntu-latest
-#    needs: [code-gen-ts, code-gen-py, code-gen-go]
+    if: ${{ always() }}
+    needs: [code-gen-ts, code-gen-py, code-gen-go]
     steps:
       - run: 'echo Hello World'
 
