@@ -13,7 +13,7 @@ jobs:
       - name: Setup protoc
         uses: arduino/setup-protoc@v1.1.2
         with:
-          version: "3.x"
+          version: "23.x"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Go environment
