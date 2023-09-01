@@ -13,6 +13,7 @@ jobs:
     outputs:
       cache-hit: ${{ steps.check-proto-cache.outputs.cache-hit }}
     steps:
+      - uses: actions/checkout@v3
       - name: Check Cache
         id: check-proto-cache
         uses: actions/cache@v3

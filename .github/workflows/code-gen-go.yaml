@@ -79,7 +79,6 @@ jobs:
       - name: Add & Commit
         uses: EndBug/add-and-commit@v9.1.1
         with:
-          message: generate go proto files
-          committer_name: GoCodeGenerator
-          committer_email: GoCodeGenerator@github.com
+          default_author: github_actions
+          message: '[bot] update go-code-gen'
           cwd: ./go-code-gen
