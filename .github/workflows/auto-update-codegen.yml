@@ -74,6 +74,7 @@ jobs:
           base_branch: ${{ matrix.base_branch }}
           submodule_path: ${{ matrix.submodule_path }}
           codegen_branch: ${{ matrix.codegen_branch }}
+          token: ${{ secrets.ACCESS_OTHER_REPO_TOKEN }}
 
 
 

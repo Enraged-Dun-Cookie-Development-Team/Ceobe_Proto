@@ -15,6 +15,9 @@ inputs:
   submodule_path:
     type: string
     required: true
+  token:
+    type: string
+    required: true
 
 runs:
   using: composite
@@ -33,15 +36,17 @@ runs:
       with:
         result-encoding: string
         script: |
-          const lastMasterSha = '${{ steps.read-codegen-info.outputs.LAST_MASTER_SHA }}';
-          if (lastMasterSha.length > 0) {
-            return 'compare/' + lastMasterSha + '...${{ steps.read-codegen-info.outputs.CURRENT_MASTER_SHA }}';
+          const last_master_sha = '${{ steps.read-codegen-info.outputs.LAST_MASTER_SHA }}';
+          const current_master_sha = '${{ steps.read-codegen-info.outputs.CURRENT_MASTER_SHA }}';
+          if (last_master_sha.length > 0 && last_master_sha != current_master_sha) {
+            return 'compare/' + last_master_sha + '...' + current_master_sha;
           } else {
-            return 'commit/${{ steps.read-codegen-info.outputs.CURRENT_MASTER_SHA }}';
+            return 'commit/' + current_master_sha;
           }
     - name: 从${{ inputs.owner }}/${{ inputs.repo }}仓库检出${{ inputs.base_branch }}分支
       uses: actions/checkout@v3
       with:
+        token: ${{ inputs.token }}
         repository: ${{ inputs.owner }}/${{ inputs.repo }}
         ref: ${{ inputs.base_branch }}
     - name: 创建新分支
@@ -54,6 +59,7 @@ runs:
       id: commit-submodule-update
       uses: EndBug/add-and-commit@v9
       with:
+        github_token: ${{ inputs.token }}
         default_author: github_actions
         message: '[CI] update gRPC submodule'
     - name: 创建PR
@@ -67,6 +73,7 @@ runs:
           该PR由[CI](/Enraged-Dun-Cookie-Development-Team/Ceobe_Proto/actions/runs/${{ github.run_id }})自动创建  
           本次CI由@${{ github.triggering_actor }}触发运行
       with:
+        github-token: ${{ inputs.token }}
         script: |
           github.rest.pulls.create({
             owner: '${{ inputs.owner }}',
@@ -87,5 +94,7 @@ runs:
             body: '[CI] [本次构建](/Enraged-Dun-Cookie-Development-Team/Ceobe_Proto/actions/runs/${{ github.run_id }})未能成功向${{ inputs.owner }}/${{ inputs.repo }}仓库推送子模块更新',
             owner: context.repo.owner, repo: context.repo.repo,
           });
+    - name: 重新检出触发工作流的分支，避免工作流执行异常
+      uses: actions/checkout@v3
 
 

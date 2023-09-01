@@ -76,7 +76,7 @@ jobs:
       - name: write codegen info
         working-directory: ./master
         run: |
-          echo "CURRENT_MASTER_SHA=$(git rev-parse --short HEAD)" >> ../go-code-gen/codegen_info
+          echo "CURRENT_MASTER_SHA=$(git rev-parse --short HEAD)" > ../go-code-gen/codegen_info
           echo "LAST_MASTER_SHA=${{ steps.old-codegen-info.outputs.CURRENT_MASTER_SHA }}" >> ../go-code-gen/codegen_info
 
       - name: Add & Commit
