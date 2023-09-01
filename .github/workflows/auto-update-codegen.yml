@@ -42,10 +42,13 @@ jobs:
     strategy:
       matrix:
         include:
-          - { repo: 'cookie-fetcher', base_branch: 'master', submodule_path: './ceobe_grpc', need_job_success: 'code-gen-ts' }
+          - { repo: 'cookie-fetcher', base_branch: 'master', submodule_path: './ceobe_grpc', need_job: 'code-gen-ts' }
     steps:
-      - if: jobs['${{ matrix.need_job_success }}'].result == 'success'
+      - uses: actions/checkout@v3
+      - if: jobs[matrix.need_job].result == 'success'
         uses: ./.github/workflows/create-pr.yml
+      - if: jobs[matrix.need_job].result != 'success'
+        run: echo '因${{ matrix.need_job }}的执行结果是${{ jobs[matrix.need_job].result }}，不执行创建PR的步骤'
 
 
 
