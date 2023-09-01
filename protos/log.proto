@@ -1,0 +1,41 @@
+syntax = "proto3"; // 版本声明，使用Protocol Buffers v3版本
+
+option go_package = "./pb";  // 指定生成的Go代码在你项目中的导入路径
+
+package pb; // 包名
+
+
+// 定义服务
+service Log {
+    // 推送日志
+    rpc PushLog (LogRequest) returns (LogResponse) {}
+}
+
+// 请求消息
+message LogRequest {
+    enum ServeType //枚举消息类型
+    {
+        RUST = 0;
+        FETCHER = 1; 
+        ANALYZER = 2;
+        SCHEDULER = 3;
+    }
+    ServeType server = 1;
+    enum LogType //枚举消息类型
+    {
+        TRACE = 0;
+        DEBUG = 1; 
+        INFO = 2;
+        WARN = 3;
+        ERROR = 4;
+    }
+    LogType level = 2;
+    bool manual = 3;
+    string info = 4;
+    string extra = 5;
+}
+
+// 响应消息
+message LogResponse {
+    bool success = 1;
+}
