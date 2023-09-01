@@ -62,6 +62,7 @@ runs:
         github_token: ${{ inputs.token }}
         default_author: github_actions
         message: '[CI] update gRPC submodule'
+        push: update-grpc-build${{ github.run_number }}
     - name: 创建PR
       if: steps.commit-submodule-update.outputs.pushed == 'true'
       uses: actions/github-script@v6
