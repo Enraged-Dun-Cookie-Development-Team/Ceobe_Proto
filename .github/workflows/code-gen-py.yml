@@ -64,6 +64,21 @@ jobs:
           mkdir -v ./py-code-gen/pb &&
           cp -vr ./master/pb/* ./py-code-gen/pb/
 
+      - name: read old codegen info
+        id: old-codegen-info
+        working-directory: ./py-code-gen
+        # 因为一开始没有这个文件，所以写入一段空内容
+        run: |
+          echo "" >> ./codegen_info
+          cat ./codegen_info >> "$GITHUB_OUTPUT"
+
+      - name: write codegen info
+        working-directory: ./master
+        run: |
+          echo "CI_BUILD_NUMBER=${{ github.run_number }}" > ../py-code-gen/codegen_info
+          echo "CURRENT_MASTER_SHA=$(git rev-parse --short HEAD)" >> ../py-code-gen/codegen_info
+          echo "LAST_MASTER_SHA=${{ steps.old-codegen-info.outputs.CURRENT_MASTER_SHA }}" >> ../py-code-gen/codegen_info
+
       - name: Add & Commit
         uses: EndBug/add-and-commit@v9
         with:

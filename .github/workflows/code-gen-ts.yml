@@ -53,6 +53,21 @@ jobs:
         run: npm run codegen ${{ github.workspace }}/master ${{ github.workspace }}/ts-code-gen
         working-directory: ./master/scripts/node
 
+      - name: read old codegen info
+        id: old-codegen-info
+        working-directory: ./ts-code-gen
+        # 因为一开始没有这个文件，所以写入一段空内容
+        run: |
+          echo "" >> ./codegen_info
+          cat ./codegen_info >> "$GITHUB_OUTPUT"
+
+      - name: write codegen info
+        working-directory: ./master
+        run: |
+          echo "CI_BUILD_NUMBER=${{ github.run_number }}" > ../ts-code-gen/codegen_info
+          echo "CURRENT_MASTER_SHA=$(git rev-parse --short HEAD)" >> ../ts-code-gen/codegen_info
+          echo "LAST_MASTER_SHA=${{ steps.old-codegen-info.outputs.CURRENT_MASTER_SHA }}" >> ../ts-code-gen/codegen_info
+
       - name: Add & Commit
         uses: EndBug/add-and-commit@v9
         with:

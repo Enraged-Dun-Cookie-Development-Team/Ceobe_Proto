@@ -3,43 +3,90 @@ name: create pr
 on:
   workflow_call:
     inputs:
+      codegen_branch:
+        type: string
+        required: true
+      owner:
+        type: string
+        default: ${{ github.repository_owner }}
       repo:
         type: string
+        required: true
       base_branch:
         type: string
+        required: true
       submodule_path:
         type: string
+        required: true
 
 jobs:
   create-pr:
     runs-on: ubuntu-latest
     steps:
-      - name: 从${{ inputs.repo }}仓库检出${{ inputs.base_branch }}分支
+      - name: 从当前仓库检出${{ inputs.codegen_branch }}分支
         uses: actions/checkout@v3
         with:
-          repository: Enraged-Dun-Cookie-Development-Team/${{ inputs.repo }}
+          ref: ${{ inputs.codegen_branch }}
+      - name: 获取${{ inputs.codegen_branch }}分支保存的代码生成信息
+        id: read-codegen-info
+        run: cat ./codegen_info >> "$GITHUB_OUTPUT"
+      - name: 生成commit对比链接
+        id: commit-url
+        uses: actions/github-script@v6
+        with:
+          result-encoding: string
+          script: |
+            const lastMasterSha = '${{ steps.read-codegen-info.outputs.LAST_MASTER_SHA }}';
+            if (lastMasterSha.length > 0) {
+              return 'compare/' + lastMasterSha + '...${{ steps.read-codegen-info.outputs.CURRENT_MASTER_SHA }}';
+            } else {
+              return 'commit/${{ steps.read-codegen-info.outputs.CURRENT_MASTER_SHA }}';
+            }
+      - name: 从${{ inputs.owner }}/${{ inputs.repo }}仓库检出${{ inputs.base_branch }}分支
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ inputs.owner }}/${{ inputs.repo }}
           ref: ${{ inputs.base_branch }}
       - name: 创建新分支
         run: git checkout -b update-grpc-build${{ github.run_number }}
       - name: 更新子模块：${{ inputs.submodule_path }}
         run: git submodule update --remote ${{ inputs.submodule_path }}
       - name: 提交commit
+        id: commit-submodule-update
         uses: EndBug/add-and-commit@v9
         with:
           default_author: github_actions
           message: '[CI] update gRPC submodule'
       - name: 创建PR
+        if: steps.commit-submodule-update.outputs.pushed == 'true'
         uses: actions/github-script@v6
+        env:
+          PR_BODY: |
+            详细信息请参考：[原始Proto文件更改](/Enraged-Dun-Cookie-Development-Team/Ceobe_Proto/${{ steps.commit-url.outputs.result }})
+
+            -----
+            该PR由[CI](/Enraged-Dun-Cookie-Development-Team/Ceobe_Proto/actions/runs/${{ github.run_id }})自动创建  
+            本次CI由@${{ github.triggering_actor }}触发运行
         with:
           script: |
             github.rest.pulls.create({
-              owner: 'Enraged-Dun-Cookie-Development-Team',
+              owner: '${{ inputs.owner }}',
               repo: '${{ inputs.repo }}',
               head: 'update-grpc-build${{ github.run_number }}',
               base: '${{ inputs.base_branch }}',
               title: '[CI] 更新gRPC子模块',
-              body: '',
+              body: '${{ env.PR_BODY }}',
               draft: false,
+            });
+      - name: 如果未成功提交则向commit添加评论
+        if: steps.commit-submodule-update.outputs.pushed != 'true'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.repos.createCommitComment({
+              commit_sha: ${{ steps.read-codegen-info.outputs.CURRENT_MASTER_SHA }},
+              body: '[CI] [本次构建](/Enraged-Dun-Cookie-Development-Team/Ceobe_Proto/actions/runs/${{ github.run_id }})未能成功向${{ inputs.owner }}/${{ inputs.repo }}仓库推送子模块更新',
+              owner: context.repo.owner, repo: context.repo.repo,
             });
 
 
