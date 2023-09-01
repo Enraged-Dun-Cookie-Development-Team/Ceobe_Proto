@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-go@v3
 
       - run: go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-      - run: go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
+      - run: go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3
 
       # check out master 分支
       - name: check out master
@@ -28,13 +28,6 @@ jobs:
           ref: master
           path: ./master
 
-      # checkout go 分支
-      - name: Checkout go branch
-        uses: actions/checkout@v3
-        with:
-          ref: go-code-gen
-          path: ./go-code-gen
-
       # 在master 中生成代码
       - name: generate proto code
         run:
@@ -42,6 +35,13 @@ jobs:
           protoc --go_out=./code_gen protos/*.proto &&
           protoc --go-grpc_out=./code_gen protos/*.proto
         working-directory: ./master
+
+      # checkout go 分支
+      - name: Checkout go branch
+        uses: actions/checkout@v3
+        with:
+          ref: go-code-gen
+          path: ./go-code-gen
 
       # 清理 go code gen 中的Go文件和workflow文件
       - name: remove old gen files
