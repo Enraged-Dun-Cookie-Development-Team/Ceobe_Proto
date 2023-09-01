@@ -31,11 +31,11 @@ jobs:
       - run: echo "${{ hashFiles('**/*.proto') }}" > __proto_hash__
   code-gen-ts:
     needs: check-cache
-    if: needs.check-cache.outputs.cache-hit != 'true'
+    #if: needs.check-cache.outputs.cache-hit != 'true'
     uses: ./.github/workflows/code-gen-ts.yml
   code-gen-py:
     needs: check-cache
-    if: needs.check-cache.outputs.cache-hit != 'true'
+    #if: needs.check-cache.outputs.cache-hit != 'true'
     uses: ./.github/workflows/code-gen-py.yml
   code-gen-go:
     needs: check-cache
