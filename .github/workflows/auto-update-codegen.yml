@@ -24,10 +24,23 @@ jobs:
       max-parallel: 1
       matrix:
         include:
-          - { repo: 'cookie-fetcher', base_branch: 'master', submodule_path: './ceobe_grpc', need_job: 'code-gen-ts', codegen_branch: 'ts-code-gen' }
-          - { repo: 'cookie-analyzer', base_branch: 'master', submodule_path: './ceobe_grpc', need_job: 'code-gen-ts', codegen_branch: 'ts-code-gen' }
+          # 需要自动创建PR的仓库列表，repo是目标仓库，base_branch是目标分支，submodule_path是子模块在目标仓库的路径，need_job是依赖的代码生成任务
+          - { repo: 'cookie-fetcher', base_branch: 'master', submodule_path: './ceobe_grpc', need_job: 'code-gen-ts' }
+          - { repo: 'cookie-analyzer', base_branch: 'master', submodule_path: './ceobe_grpc', need_job: 'code-gen-ts' }
     steps:
       - uses: actions/checkout@v3
+      - name: 设置代码生成分支
+        id: get-codegen-branch
+        uses: actions/github-script@v6
+        with:
+          result-encoding: string
+          script: |
+            switch ('${{ matrix.need_job }}') {
+              case 'code-gen-ts': return 'ts-code-gen';
+              case 'code-gen-go': return 'go-code-gen';
+              case 'code-gen-py': return 'py-code-gen';
+              default: throw new Error('不支持的代码生成任务：${{ matrix.need_job }}');
+            }
       - name: 输出调试信息
         uses: actions/github-script@v6
         with:
@@ -44,7 +57,7 @@ jobs:
           repo: ${{ matrix.repo }}
           base_branch: ${{ matrix.base_branch }}
           submodule_path: ${{ matrix.submodule_path }}
-          codegen_branch: ${{ matrix.codegen_branch }}
+          codegen_branch: ${{ steps.get-codegen-branch.outputs.result }}
           token: ${{ secrets.ACCESS_OTHER_REPO_TOKEN }}
 
 
