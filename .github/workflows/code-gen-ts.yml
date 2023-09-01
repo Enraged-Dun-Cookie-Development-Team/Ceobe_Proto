@@ -35,6 +35,15 @@ jobs:
           ref: ts-code-gen
           path: ./ts-code-gen
 
+      - name: read old codegen info
+        id: old-codegen-info
+        working-directory: ./ts-code-gen
+        # 因为一开始没有这个文件，所以写入一段空内容
+        run: |
+          echo "" >> ./codegen_info
+          cat ./codegen_info
+          cat ./codegen_info >> "$GITHUB_OUTPUT"
+
       # 清理workflow文件
       - name: remove old gen files
         run: |
@@ -47,15 +56,6 @@ jobs:
       - name: generate proto code
         run: npm run codegen ${{ github.workspace }}/master ${{ github.workspace }}/ts-code-gen
         working-directory: ./master/scripts/node
-
-      - name: read old codegen info
-        id: old-codegen-info
-        working-directory: ./ts-code-gen
-        # 因为一开始没有这个文件，所以写入一段空内容
-        run: |
-          echo "" >> ./codegen_info
-          cat ./codegen_info
-          cat ./codegen_info >> "$GITHUB_OUTPUT"
 
       - name: write codegen info
         working-directory: ./master

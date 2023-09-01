@@ -34,6 +34,14 @@ jobs:
           ref: py-code-gen
           path: ./py-code-gen
 
+      - name: read old codegen info
+        id: old-codegen-info
+        working-directory: ./py-code-gen
+        # 因为一开始没有这个文件，所以写入一段空内容
+        run: |
+          echo "" >> ./codegen_info
+          cat ./codegen_info >> "$GITHUB_OUTPUT"
+
       # 下载py proto依赖
       - run:
           pip install protobuf &&
@@ -65,14 +73,6 @@ jobs:
         run:
           mkdir -v ./py-code-gen/pb &&
           cp -vr ./master/pb/* ./py-code-gen/pb/
-
-      - name: read old codegen info
-        id: old-codegen-info
-        working-directory: ./py-code-gen
-        # 因为一开始没有这个文件，所以写入一段空内容
-        run: |
-          echo "" >> ./codegen_info
-          cat ./codegen_info >> "$GITHUB_OUTPUT"
 
       - name: write codegen info
         working-directory: ./master

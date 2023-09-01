@@ -48,6 +48,14 @@ jobs:
           ref: go-code-gen
           path: ./go-code-gen
 
+      - name: read old codegen info
+        id: old-codegen-info
+        working-directory: ./go-code-gen
+        # 因为一开始没有这个文件，所以写入一段空内容
+        run: |
+          echo "" >> ./codegen_info
+          cat ./codegen_info >> "$GITHUB_OUTPUT"
+
       # 清理 go code gen 中的Go文件和workflow文件
       - name: remove old gen files
         run: |
@@ -65,14 +73,6 @@ jobs:
         run:
           mkdir -v ./go-code-gen/code_gen &&
           cp -vr ./master/code_gen/* ./go-code-gen/code_gen
-
-      - name: read old codegen info
-        id: old-codegen-info
-        working-directory: ./go-code-gen
-        # 因为一开始没有这个文件，所以写入一段空内容
-        run: |
-          echo "" >> ./codegen_info
-          cat ./codegen_info >> "$GITHUB_OUTPUT"
 
       - name: write codegen info
         working-directory: ./master
