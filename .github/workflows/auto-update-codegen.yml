@@ -2,55 +2,29 @@ name: auto update codegen
 
 on:
   workflow_dispatch:
-    inputs:
-      create_pr_when_codegen_skipped:
-        description: 如果代码生成任务跳过了，是否仍要创建PR
-        type: boolean
-        default: false
   push:
-    branches: [ auto-update-codegen ]
-#    paths:
-#      - "**/*.proto"
+    branches: [ master ]
+    paths:
+      - "**/*.proto"
 
 jobs:
-  check-cache:
-    runs-on: ubuntu-latest
-    outputs:
-      cache-hit: ${{ steps.check-proto-cache.outputs.cache-hit }}
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: master
-      - name: Check Cache
-        id: check-proto-cache
-        uses: actions/cache@v3
-        with:
-          path: '__proto_hash__'
-          key: all-proto-files-${{ hashFiles('**/*.proto') }}
-      - run: echo "cache-hit=${{ steps.check-proto-cache.outputs.cache-hit }}" >> "$GITHUB_OUTPUT"
-      - run: echo "${{ hashFiles('**/*.proto') }}" > __proto_hash__
   code-gen-ts:
-    needs: check-cache
-    #if: needs.check-cache.outputs.cache-hit != 'true'
     uses: ./.github/workflows/code-gen-ts.yml
   code-gen-py:
-    needs: check-cache
-    #if: needs.check-cache.outputs.cache-hit != 'true'
     uses: ./.github/workflows/code-gen-py.yml
   code-gen-go:
-    needs: check-cache
-    #if: needs.check-cache.outputs.cache-hit != 'true'
     uses: ./.github/workflows/code-gen-go.yml
 
   after-codegen:
     runs-on: ubuntu-latest
-    if: ${{ always() }}
+    if: ${{ !cancelled() }}
     needs: [code-gen-ts, code-gen-py, code-gen-go]
     strategy:
       max-parallel: 1
       matrix:
         include:
           - { repo: 'cookie-fetcher', base_branch: 'master', submodule_path: './ceobe_grpc', need_job: 'code-gen-ts', codegen_branch: 'ts-code-gen' }
+          - { repo: 'cookie-analyzer', base_branch: 'master', submodule_path: './ceobe_grpc', need_job: 'code-gen-ts', codegen_branch: 'ts-code-gen' }
     steps:
       - uses: actions/checkout@v3
       - name: 输出调试信息
@@ -60,7 +34,7 @@ jobs:
             if ('${{ needs[matrix.need_job].result }}' == 'success') {
               console.log('${{ matrix.need_job }}的执行结果是success，尝试创建PR');
             } else {
-              if ('${{ needs[matrix.need_job].result }}' == 'skipped' && '${{ inputs.create_pr_when_codegen_skipped }}' == 'true') {
+              if ('${{ needs[matrix.need_job].result }}' == 'skipped') {
                 console.log('${{ matrix.need_job }}的执行结果是skipped，由于create_pr_when_codegen_skipped为true，尝试创建PR');
               } else {
                 console.log('因${{ matrix.need_job }}的执行结果是${{ needs[matrix.need_job].result }}，不执行创建PR的步骤');
