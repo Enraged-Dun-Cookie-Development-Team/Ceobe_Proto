@@ -1,21 +1,18 @@
 name: go code generate
 
 on:
-  push:
-    branches: [ master ]
-    paths:
-        - "*.proto"
+  workflow_dispatch:
+  workflow_call:
 
 jobs:
   code-gen:
     runs-on: ubuntu-latest
 
     steps:
-      # set up toolchain 
+      # set up toolchain
       - name: Setup protoc
         uses: arduino/setup-protoc@v1.1.2
         with:
-          version: "3.x"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Go environment
@@ -32,7 +29,7 @@ jobs:
 
       # 在master 中生成代码
       - name: generate proto code
-        run: 
+        run:
           mkdir -v code_gen &&
           protoc --go_out=./code_gen protos/*.proto &&
           protoc --go-grpc_out=./code_gen protos/*.proto
@@ -55,7 +52,7 @@ jobs:
           committer_email: GoCodeGenerator@github.com
           new_branch: go-code-gen
           cwd: ./master
-        
+
 
       # 清空 go code gen 中的Go文件
       # 当分支存在时，清空
@@ -75,7 +72,7 @@ jobs:
           cp -vr ./master/protos/* ./go-code-gen/protos
 
       - name: copy code gen
-        run: 
+        run:
           mkdir -v ./go-code-gen/code_gen &&
           cp -vr ./master/code_gen/* ./go-code-gen/code_gen
 

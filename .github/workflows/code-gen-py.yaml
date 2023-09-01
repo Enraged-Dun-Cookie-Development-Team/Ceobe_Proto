@@ -1,10 +1,8 @@
 name: py code generate
 
 on:
-  push:
-    branches: [ master ]
-    paths:
-        - "*.proto"
+  workflow_dispatch:
+  workflow_call:
 
 jobs:
   code-gen-ts:
@@ -13,9 +11,8 @@ jobs:
     steps:
       # set up toolchain
       - name: Setup protoc
-        uses: arduino/setup-protoc@v1.1.2
+        uses: arduino/setup-protoc@v2.0.0
         with:
-          version: "3.x"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python

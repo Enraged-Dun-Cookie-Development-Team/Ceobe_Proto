@@ -1,0 +1,23 @@
+name: auto update codegen
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master, auto-update-codegen ]
+    paths:
+      - "**/*.proto"
+
+jobs:
+  code-gen-ts:
+    uses: ./.github/workflows/code-gen-ts.yaml
+  code-gen-py:
+    uses: ./.github/workflows/code-gen-py.yaml
+  code-gen-go:
+    uses: ./.github/workflows/code-gen-go.yaml
+
+  create-pr:
+    runs-on: ubuntu-latest
+    needs: [code-gen-ts, code-gen-py, code-gen-go]
+    steps:
+      - run: 'echo Hello World'
+

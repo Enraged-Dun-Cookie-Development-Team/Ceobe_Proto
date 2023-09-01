@@ -2,10 +2,7 @@ name: ts code generate
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ master ]
-    paths:
-        - "*.proto"
+  workflow_call:
 
 jobs:
   code-gen-ts:
@@ -16,7 +13,6 @@ jobs:
       - name: Setup protoc
         uses: arduino/setup-protoc@v1.1.2
         with:
-          version: "3.x"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       # 给当前服务器安装node
