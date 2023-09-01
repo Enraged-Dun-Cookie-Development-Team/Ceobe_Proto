@@ -27,7 +27,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: '__proto_hash__'
-          key: proto-${{ hashFiles('**/*.proto') }}
+          key: all-proto-files-${{ hashFiles('**/*.proto') }}
       - run: echo "cache-hit=${{ steps.check-proto-cache.outputs.cache-hit }}" >> "$GITHUB_OUTPUT"
       - run: echo "${{ hashFiles('**/*.proto') }}" > __proto_hash__
   code-gen-ts:
