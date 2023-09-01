@@ -48,7 +48,7 @@ jobs:
       - if: jobs[matrix.need_job].result == 'success'
         uses: ./.github/workflows/create-pr.yml
       - if: jobs[matrix.need_job].result != 'success'
-        run: echo '因${{ matrix.need_job }}的执行结果是${{ jobs[matrix.need_job].result }}，不执行创建PR的步骤'
+        run: echo '因${{ matrix.need_job }}的执行结果是${{ needs[matrix.need_job].result }}，不执行创建PR的步骤'
 
 
 
