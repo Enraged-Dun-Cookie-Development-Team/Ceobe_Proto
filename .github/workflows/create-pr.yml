@@ -1,4 +1,4 @@
-name: auto update codegen
+name: create pr
 
 on:
   workflow_call:

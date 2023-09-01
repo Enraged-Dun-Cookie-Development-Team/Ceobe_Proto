@@ -25,15 +25,15 @@ jobs:
   code-gen-ts:
     needs: check-cache
     if: needs.check-cache.outputs.cache-hit != 'true'
-    uses: ./.github/workflows/code-gen-ts.yaml
+    uses: ./.github/workflows/code-gen-ts.yml
   code-gen-py:
     needs: check-cache
     if: needs.check-cache.outputs.cache-hit != 'true'
-    uses: ./.github/workflows/code-gen-py.yaml
+    uses: ./.github/workflows/code-gen-py.yml
   code-gen-go:
     needs: check-cache
     if: needs.check-cache.outputs.cache-hit != 'true'
-    uses: ./.github/workflows/code-gen-go.yaml
+    uses: ./.github/workflows/code-gen-go.yml
 
   create-pr:
     runs-on: ubuntu-latest
@@ -45,7 +45,7 @@ jobs:
           - { repo: 'cookie-fetcher', base_branch: 'master', submodule_path: './ceobe_grpc', need_job_success: 'code-gen-ts' }
     steps:
       - if: jobs['${{ matrix.need_job_success }}'].result == 'success'
-        uses: ./.github/workflows/create-pr.yaml
+        uses: ./.github/workflows/create-pr.yml
 
 
 
