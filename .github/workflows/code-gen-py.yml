@@ -77,7 +77,6 @@ jobs:
       - name: write codegen info
         working-directory: ./master
         run: |
-          echo "CI_BUILD_NUMBER=${{ github.run_number }}" > ../py-code-gen/codegen_info
           echo "CURRENT_MASTER_SHA=$(git rev-parse --short HEAD)" >> ../py-code-gen/codegen_info
           echo "LAST_MASTER_SHA=${{ steps.old-codegen-info.outputs.CURRENT_MASTER_SHA }}" >> ../py-code-gen/codegen_info
 

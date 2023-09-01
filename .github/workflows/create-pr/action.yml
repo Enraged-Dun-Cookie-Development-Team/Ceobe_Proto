@@ -26,6 +26,7 @@ runs:
     - name: 获取${{ inputs.codegen_branch }}分支保存的代码生成信息
       id: read-codegen-info
       run: cat ./codegen_info >> "$GITHUB_OUTPUT"
+      shell: bash
     - name: 生成commit对比链接
       id: commit-url
       uses: actions/github-script@v6
@@ -45,8 +46,10 @@ runs:
         ref: ${{ inputs.base_branch }}
     - name: 创建新分支
       run: git checkout -b update-grpc-build${{ github.run_number }}
+      shell: bash
     - name: 更新子模块：${{ inputs.submodule_path }}
       run: git submodule update --remote ${{ inputs.submodule_path }}
+      shell: bash
     - name: 提交commit
       id: commit-submodule-update
       uses: EndBug/add-and-commit@v9

@@ -50,7 +50,7 @@ jobs:
       max-parallel: 1
       matrix:
         include:
-          - { repo: 'cookie-fetcher', base_branch: 'master', submodule_path: './ceobe_grpc', need_job: 'code-gen-ts' }
+          - { repo: 'cookie-fetcher', base_branch: 'master', submodule_path: './ceobe_grpc', need_job: 'code-gen-ts', codegen_branch: 'ts-code-gen' }
     steps:
       - uses: actions/checkout@v3
       - name: 输出调试信息
@@ -69,6 +69,11 @@ jobs:
       - name: 尝试创建PR
         if: needs[matrix.need_job].result == 'success'
         uses: ./.github/workflows/create-pr
+        with:
+          repo: ${{ matrix.repo }}
+          base_branch: ${{ matrix.base_branch }}
+          submodule_path: ${{ matrix.submodule_path }}
+          codegen_branch: ${{ matrix.codegen_branch }}
 
 
 
