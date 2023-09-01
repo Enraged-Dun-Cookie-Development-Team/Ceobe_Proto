@@ -40,6 +40,11 @@ jobs:
           ref: ts-code-gen
           path: ./ts-code-gen
 
+      # 清理workflow文件
+      - name: remove old gen files
+        run: |
+          rm -rf ./ts-code-gen/.github
+
       - run: npm ci
         working-directory: ./master/scripts/node
 
@@ -49,7 +54,7 @@ jobs:
         working-directory: ./master/scripts/node
 
       - name: Add & Commit
-        uses: EndBug/add-and-commit@v9.1.1
+        uses: EndBug/add-and-commit@v9
         with:
           default_author: github_actions
           message: '[CI] update ts-code-gen'

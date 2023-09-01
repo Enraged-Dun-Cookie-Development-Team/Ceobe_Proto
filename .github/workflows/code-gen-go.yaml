@@ -42,9 +42,10 @@ jobs:
           protoc --go-grpc_out=./code_gen protos/*.proto
         working-directory: ./master
 
-      # 清理 go code gen 中的Go文件
+      # 清理 go code gen 中的Go文件和workflow文件
       - name: remove old gen files
         run: |
+          rm -rf ./go-code-gen/.github
           rm -rf ./go-code-gen/code_gen
           rm -rf ./go-code-gen/protos
 
@@ -60,7 +61,7 @@ jobs:
           cp -vr ./master/code_gen/* ./go-code-gen/code_gen
 
       - name: Add & Commit
-        uses: EndBug/add-and-commit@v9.1.1
+        uses: EndBug/add-and-commit@v9
         with:
           default_author: github_actions
           message: '[CI] update go-code-gen'

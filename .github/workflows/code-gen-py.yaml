@@ -47,9 +47,10 @@ jobs:
           python -m grpc_tools.protoc -I=./protos --python_out=./pb --grpc_python_out=./pb ./protos/*.proto
         working-directory: ./master
 
-      # 清理 py code gen 中的Py文件
+      # 清理 py code gen 中的Py文件和workflow文件
       - name: remove old gen files
         run: |
+          rm -rf ./py-code-gen/.github
           rm -rf ./py-code-gen/pb
           rm -rf ./py-code-gen/protos
 
@@ -64,7 +65,7 @@ jobs:
           cp -vr ./master/pb/* ./py-code-gen/pb/
 
       - name: Add & Commit
-        uses: EndBug/add-and-commit@v9.1.1
+        uses: EndBug/add-and-commit@v9
         with:
           default_author: github_actions
           message: '[CI] update py-code-gen'

@@ -39,6 +39,13 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ always() }}
     needs: [code-gen-ts, code-gen-py, code-gen-go]
+    strategy:
+      matrix:
+        include:
+          - { repo: 'cookie-fetcher', base_branch: 'master', submodule_path: './ceobe_grpc', need_job_success: 'code-gen-ts' }
     steps:
-      - run: 'echo Hello World'
+      - if: jobs['${{ matrix.need_job_success }}'].result == 'success'
+        uses: ./.github/workflows/create-pr.yaml
+
+
 

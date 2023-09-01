@@ -1,0 +1,45 @@
+name: auto update codegen
+
+on:
+  workflow_call:
+    inputs:
+      repo:
+        type: string
+      base_branch:
+        type: string
+      submodule_path:
+        type: string
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 从${{ inputs.repo }}仓库检出${{ inputs.base_branch }}分支
+        uses: actions/checkout@v3
+        with:
+          repository: Enraged-Dun-Cookie-Development-Team/${{ inputs.repo }}
+          ref: ${{ inputs.base_branch }}
+      - name: 创建新分支
+        run: git checkout -b update-grpc-build${{ github.run_number }}
+      - name: 更新子模块：${{ inputs.submodule_path }}
+        run: git submodule update --remote ${{ inputs.submodule_path }}
+      - name: 提交commit
+        uses: EndBug/add-and-commit@v9
+        with:
+          default_author: github_actions
+          message: '[CI] update gRPC submodule'
+      - name: 创建PR
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.pulls.create({
+              owner: 'Enraged-Dun-Cookie-Development-Team',
+              repo: '${{ inputs.repo }}',
+              head: 'update-grpc-build${{ github.run_number }}',
+              base: '${{ inputs.base_branch }}',
+              title: '[CI] 更新gRPC子模块',
+              body: '',
+              draft: false,
+            });
+
+
