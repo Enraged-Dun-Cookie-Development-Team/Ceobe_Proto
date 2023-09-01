@@ -82,7 +82,7 @@ runs:
             head: 'update-grpc-build${{ github.run_number }}',
             base: '${{ inputs.base_branch }}',
             title: '[CI] 更新gRPC子模块',
-            body: '${{ env.PR_BODY }}',
+            body: `${{ env.PR_BODY }}`,
             draft: false,
           });
     - name: 如果未成功提交则向commit添加评论
