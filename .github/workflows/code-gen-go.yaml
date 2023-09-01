@@ -5,7 +5,7 @@ on:
   workflow_call:
 
 jobs:
-  code-gen:
+  code-gen-go:
     runs-on: ubuntu-latest
 
     steps:

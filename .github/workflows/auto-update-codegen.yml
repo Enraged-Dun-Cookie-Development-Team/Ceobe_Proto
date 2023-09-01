@@ -5,7 +5,7 @@ on:
   push:
     branches: [ auto-update-codegen ]
 #    paths:
-#      - "**/*.proto"
+#      - "**.proto"
 
 jobs:
   check-cache:
@@ -18,9 +18,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: '__proto_hash__'
-          key: proto-${{ hashFiles('**/*.proto') }}
+          key: proto-${{ hashFiles('**.proto') }}
       - run: echo "cache-hit=${{ steps.check-proto-cache.outputs.cache-hit }}" >> "$GITHUB_OUTPUT"
-      - run: echo "${{ hashFiles('**/*.proto') }}" > __proto_hash__
+      - run: echo "${{ hashFiles('**.proto') }}" > __proto_hash__
   code-gen-ts:
     needs: check-cache
     if: needs.check-cache.outputs.cache-hit != 'true'
