@@ -68,7 +68,7 @@ jobs:
             }
       - name: 尝试创建PR
         if: needs[matrix.need_job].result == 'success'
-        uses: ./.github/workflows/create-pr.yml
+        uses: ./.github/workflows/create-pr
 
 
 
