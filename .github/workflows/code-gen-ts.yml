@@ -3,11 +3,18 @@ name: ts code generate
 on:
   workflow_dispatch:
   workflow_call:
+    outputs:
+      committed:
+        value: ${{ jobs.code-gen-ts.outputs.committed }}
+      pushed:
+        value: ${{ jobs.code-gen-ts.outputs.pushed }}
 
 jobs:
   code-gen-ts:
     runs-on: ubuntu-latest
-
+    outputs:
+      committed: ${{ steps.commit-changes.outputs.committed }}
+      pushed: ${{ steps.commit-changes.outputs.pushed }}
     steps:
       # set up toolchain
       - name: Setup protoc
@@ -64,6 +71,7 @@ jobs:
           echo "LAST_MASTER_SHA=${{ steps.old-codegen-info.outputs.CURRENT_MASTER_SHA }}" >> ../ts-code-gen/codegen_info
 
       - name: Add & Commit
+        id: commit-changes
         uses: EndBug/add-and-commit@v9
         with:
           default_author: github_actions

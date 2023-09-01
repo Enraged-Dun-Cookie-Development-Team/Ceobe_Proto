@@ -31,17 +31,13 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            if ('${{ needs[matrix.need_job].result }}' == 'success') {
-              console.log('${{ matrix.need_job }}的执行结果是success，尝试创建PR');
+            if ('${{ needs[matrix.need_job].outputs.pushed }}' == 'true') {
+              console.log('${{ matrix.need_job }}成功推送了代码生成更新，尝试创建PR');
             } else {
-              if ('${{ needs[matrix.need_job].result }}' == 'skipped') {
-                console.log('${{ matrix.need_job }}的执行结果是skipped，由于create_pr_when_codegen_skipped为true，尝试创建PR');
-              } else {
-                console.log('因${{ matrix.need_job }}的执行结果是${{ needs[matrix.need_job].result }}，不执行创建PR的步骤');
-              }
+              console.log('${{ matrix.need_job }}未能成功推送代码生成更新，不执行创建PR的步骤');
             }
       - name: 尝试创建PR
-        if: needs[matrix.need_job].result == 'success'
+        if: ${{ needs[matrix.need_job].outputs.pushed }} == 'true'
         uses: ./.github/workflows/create-pr
         with:
           repo: ${{ matrix.repo }}
