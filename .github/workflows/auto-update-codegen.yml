@@ -45,12 +45,12 @@ jobs:
         id: encrypt-app-token
         run: |
           result=$(gpg --symmetric --batch --passphrase "${{ secrets.SECRET_PASSING_KEY }}" --output - <(echo "${{ steps.gen-app-token.outputs.APP_TOKEN }}") | base64 -w0)
-          echo "::set-output name=ENCRYPTED_TOKEN::$result"
+          echo "ENCRYPTED_TOKEN=$result" >> $GITHUB_OUTPUT
 
   after-codegen:
     runs-on: ubuntu-latest
     needs: [code-gen-ts, code-gen-py, code-gen-go, generate-token]
-    if: ${{ !cancelled() && needs.generate-token.result == 'success' && needs.generate-token.outputs.token != null }}
+    if: ${{ !cancelled() && needs.generate-token.result == 'success' && needs.generate-token.outputs.ENCRYPTED_TOKEN != null }}
     strategy:
       # 避免并发请求触发Github的API速率限制
       max-parallel: 1
@@ -86,9 +86,9 @@ jobs:
         if: ${{ needs[matrix.need_job].outputs.pushed }} == 'true'
         id: decrypt-app-token
         run: |
-          result=$(gpg --decrypt --quiet --batch --passphrase "SECRET" --output - <(echo "$encrypted_value" | base64 --decode))
+          result=$(gpg --decrypt --quiet --batch --passphrase "${{ secrets.SECRET_PASSING_KEY }}" --output - <(echo "${{ needs.generate-token.outputs.ENCRYPTED_TOKEN }}" | base64 --decode))
           echo "::add-mask::$result"
-          echo "::set-output name=DECRYPTED_TOKEN::$result"
+          echo "DECRYPTED_TOKEN=$result" >> $GITHUB_OUTPUT
       - name: 尝试创建PR
         if: ${{ success() && needs[matrix.need_job].outputs.pushed == 'true' }}
         uses: ./.github/workflows/create-pr
