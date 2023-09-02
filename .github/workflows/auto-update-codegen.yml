@@ -35,7 +35,8 @@ jobs:
 
             const appOctokit = new Octokit({ authStrategy: createAppAuth, auth: { appId: '${{ secrets.APP_ID }}', privateKey: `${{ secrets.APP_PRIVATE_KEY_53AIYSR }}` } });
             const installation = await appOctokit.rest.apps.getOrgInstallation({ org: '${{ github.repository_owner }}' });
-            const { token } = await appOctokit.auth({ type: "installation", installationId: installation.data.id, });
+            const result = await appOctokit.rest.apps.createInstallationAccessToken({ installation_id: installation.data.id });
+            const token = result.data.token;
             execSync(`echo "::add-mask::${token}"`);
             writeFileSync(process.env.GITHUB_OUTPUT, `APP_TOKEN=${token}`, {flag: 'a'});
         run: echo "$SCRIPT_CONTENT" >> generate-token.mjs
