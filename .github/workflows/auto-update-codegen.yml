@@ -1,0 +1,108 @@
+name: auto update codegen
+
+on:
+  workflow_dispatch:
+    inputs:
+      force_try_create_pr:
+        description: 即使代码生成结果没有发生变化也尝试推送PR
+        type: boolean
+        default: false
+  push:
+    branches: [ master ]
+    paths:
+      - "**/*.proto"
+
+jobs:
+  code-gen-ts:
+    uses: ./.github/workflows/code-gen-ts.yml
+  code-gen-py:
+    uses: ./.github/workflows/code-gen-py.yml
+  code-gen-go:
+    uses: ./.github/workflows/code-gen-go.yml
+
+  # 生成自动化App的token
+  generate-token:
+    runs-on: ubuntu-latest
+    needs: [code-gen-ts, code-gen-py, code-gen-go]
+    outputs:
+      ENCRYPTED_TOKEN: ${{ steps.encrypt-app-token.outputs.ENCRYPTED_TOKEN }}
+    steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18 # node版本
+      - run: npm i @octokit/rest @octokit/auth-app @actions/core
+      - env:
+          SCRIPT_CONTENT: |
+            import * as core from '@actions/core';
+            import { Octokit } from "@octokit/rest";
+            import { createAppAuth } from "@octokit/auth-app";
+            
+            const appOctokit = new Octokit({ authStrategy: createAppAuth, auth: { appId: '${{ secrets.APP_ID }}', privateKey: `${{ secrets.APP_PRIVATE_KEY_53AIYSR }}` } });
+            const installation = await appOctokit.rest.apps.getOrgInstallation({ org: '${{ github.repository_owner }}' });
+            const result = await appOctokit.rest.apps.createInstallationAccessToken({ installation_id: installation.data.id });
+            const token = result.data.token;
+            core.setSecret(token);
+            core.setOutput('APP_TOKEN', token);
+        run: echo "$SCRIPT_CONTENT" >> generate-token.mjs
+      - id: gen-app-token
+        run: node generate-token.mjs
+      - name: 加密token
+        id: encrypt-app-token
+        run: |
+          result=$(gpg --symmetric --batch --passphrase "${{ secrets.SECRET_PASSING_KEY }}" --output - <(echo "${{ steps.gen-app-token.outputs.APP_TOKEN }}") | base64 -w0)
+          echo "ENCRYPTED_TOKEN=$result" >> $GITHUB_OUTPUT
+
+  after-codegen:
+    runs-on: ubuntu-latest
+    needs: [code-gen-ts, code-gen-py, code-gen-go, generate-token]
+    if: ${{ !cancelled() && needs.generate-token.result == 'success' && needs.generate-token.outputs.ENCRYPTED_TOKEN != null }}
+    strategy:
+      # 避免并发请求触发Github的API速率限制
+      max-parallel: 1
+      matrix:
+        include:
+          # 需要自动创建PR的仓库列表，repo是目标仓库，base_branch是目标分支，submodule_path是子模块在目标仓库的路径，need_job是依赖的代码生成任务
+          - { repo: 'cookie-fetcher', base_branch: 'master', submodule_path: './ceobe_grpc', need_job: 'code-gen-ts' }
+          - { repo: 'cookie-analyzer', base_branch: 'master', submodule_path: './ceobe_grpc', need_job: 'code-gen-ts' }
+    steps:
+      - uses: actions/checkout@v3
+      - name: 设置代码生成分支
+        id: get-codegen-branch
+        uses: actions/github-script@v6
+        with:
+          result-encoding: string
+          script: |
+            switch ('${{ matrix.need_job }}') {
+              case 'code-gen-ts': return 'ts-code-gen';
+              case 'code-gen-go': return 'go-code-gen';
+              case 'code-gen-py': return 'py-code-gen';
+              default: throw new Error('不支持的代码生成任务：${{ matrix.need_job }}');
+            }
+      - name: 输出调试信息
+        uses: actions/github-script@v6
+        with:
+          script: |
+            if ('${{ needs[matrix.need_job].outputs.pushed }}' == 'true') {
+              console.log('${{ matrix.need_job }}成功推送了代码生成更新，尝试创建PR');
+            } else {
+              console.log('${{ matrix.need_job }}未能成功推送代码生成更新，不执行创建PR的步骤');
+            }
+      - name: 为创建PR的任务解密token
+        if: ${{ success() && (needs[matrix.need_job].outputs.pushed == 'true' || inputs.force_try_create_pr) }}
+        id: decrypt-app-token
+        run: |
+          result=$(gpg --decrypt --quiet --batch --passphrase "${{ secrets.SECRET_PASSING_KEY }}" --output - <(echo "${{ needs.generate-token.outputs.ENCRYPTED_TOKEN }}" | base64 --decode))
+          echo "::add-mask::$result"
+          echo "DECRYPTED_TOKEN=$result" >> $GITHUB_OUTPUT
+      - name: 尝试创建PR
+        if: steps.decrypt-app-token.outcome == 'success'
+        uses: ./.github/workflows/create-pr
+        with:
+          repo: ${{ matrix.repo }}
+          base_branch: ${{ matrix.base_branch }}
+          submodule_path: ${{ matrix.submodule_path }}
+          codegen_branch: ${{ steps.get-codegen-branch.outputs.result }}
+          token: ${{ steps.decrypt-app-token.outputs.DECRYPTED_TOKEN }}
+
+
+

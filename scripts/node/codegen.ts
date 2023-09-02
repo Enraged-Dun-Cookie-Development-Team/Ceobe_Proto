@@ -75,7 +75,7 @@ for (const proto of protos) {
 fs.writeFileSync('output/index.ts', indexFileOutput);
 console.log('生成index文件完成');
 
-console.log('正在拷贝生成结果...');
+console.log('正在处理生成结果...');
 fse.copySync('template', 'output', {
   overwrite: true,
   filter: (src) => {
@@ -83,13 +83,17 @@ fse.copySync('template', 'output', {
   }
 });
 fs.rmSync('output/pb_meta', {recursive: true, force: true});
+console.log('处理生成结果完成');
 
-// 清理旧文件
+console.log('正在拷贝生成结果...');
+
+console.log('--清理旧文件...');
 fs.readdirSync(outputDir)
   .filter(f => !['node_modules', 'scripts', 'protos', 'LICENSE', '.git'].includes(f))
   .map(f => path.join(outputDir, f))
   .forEach(f => fse.rmSync(f, {recursive: true, force: true}));
-// 移动新文件
+
+console.log('--移动新文件...');
 fse.copySync('output', outputDir, {
   overwrite: true,
 });

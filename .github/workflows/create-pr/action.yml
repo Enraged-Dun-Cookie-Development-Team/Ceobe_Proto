@@ -1,0 +1,111 @@
+name: create pr
+inputs:
+  codegen_branch:
+    type: string
+    required: true
+  owner:
+    type: string
+    default: ${{ github.repository_owner }}
+  repo:
+    type: string
+    required: true
+  base_branch:
+    type: string
+    required: true
+  submodule_path:
+    type: string
+    required: true
+  token:
+    type: string
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: 从当前仓库检出${{ inputs.codegen_branch }}分支
+      uses: actions/checkout@v3
+      with:
+        path: ./create-pr/${{ inputs.codegen_branch }}
+        ref: ${{ inputs.codegen_branch }}
+    - name: 获取${{ inputs.codegen_branch }}分支保存的代码生成信息
+      id: read-codegen-info
+      working-directory: ./create-pr/${{ inputs.codegen_branch }}
+      run: |
+        cat ./codegen_info >> "$GITHUB_OUTPUT"
+        echo "CODEGEN_COMMIT_SHA=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      shell: bash
+    - name: 生成commit对比链接
+      id: commit-url
+      uses: actions/github-script@v6
+      with:
+        result-encoding: string
+        script: |
+          const last_master_sha = '${{ steps.read-codegen-info.outputs.LAST_MASTER_SHA }}';
+          const current_master_sha = '${{ steps.read-codegen-info.outputs.CURRENT_MASTER_SHA }}';
+          if (last_master_sha.length > 0 && last_master_sha != current_master_sha) {
+            return 'compare/' + last_master_sha + '...' + current_master_sha;
+          } else {
+            return 'commit/' + current_master_sha;
+          }
+    - name: 从${{ inputs.owner }}/${{ inputs.repo }}仓库检出${{ inputs.base_branch }}分支
+      uses: actions/checkout@v3
+      with:
+        path: ./create-pr/${{ inputs.repo }}
+        token: ${{ inputs.token }}
+        repository: ${{ inputs.owner }}/${{ inputs.repo }}
+        ref: ${{ inputs.base_branch }}
+    - name: 创建新分支.
+      working-directory: ./create-pr/${{ inputs.repo }}
+      run: git checkout -b update-grpc-build${{ github.run_number }}
+      shell: bash
+    - name: 更新子模块：${{ inputs.submodule_path }}
+      working-directory: ./create-pr/${{ inputs.repo }}
+      run: git submodule update --init --remote ${{ inputs.submodule_path }}
+      shell: bash
+    - name: 提交commit
+      id: commit-submodule-update
+      uses: EndBug/add-and-commit@v9
+      with:
+        cwd: ./create-pr/${{ inputs.repo }}
+        github_token: ${{ inputs.token }}
+        default_author: github_actions
+        message: '[CI] update gRPC submodule'
+        new_branch: update-grpc-build${{ github.run_number }}
+    - name: 创建PR
+      if: steps.commit-submodule-update.outputs.pushed == 'true'
+      uses: actions/github-script@v6
+      env:
+        PR_BODY: |
+          详细信息请参考：
+          - [原始文件更改](/Enraged-Dun-Cookie-Development-Team/Ceobe_Proto/${{ steps.commit-url.outputs.result }})
+          - [代码生成结果变更](/Enraged-Dun-Cookie-Development-Team/Ceobe_Proto/commit/${{ steps.read-codegen-info.outputs.CODEGEN_COMMIT_SHA }})
+          - [CI构建任务](/Enraged-Dun-Cookie-Development-Team/Ceobe_Proto/actions/runs/${{ github.run_id }})
+          
+          -----
+          该PR由CI自动创建  
+          本次CI由@${{ github.triggering_actor }}触发运行
+      with:
+        github-token: ${{ inputs.token }}
+        script: |
+          github.rest.pulls.create({
+            owner: '${{ inputs.owner }}',
+            repo: '${{ inputs.repo }}',
+            head: 'update-grpc-build${{ github.run_number }}',
+            base: '${{ inputs.base_branch }}',
+            title: '[CI] 更新gRPC子模块',
+            body: `${{ env.PR_BODY }}`,
+            draft: false,
+          });
+    - name: 如果未成功提交则向commit添加评论
+      if: steps.commit-submodule-update.outputs.pushed != 'true'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.repos.createCommitComment({
+            commit_sha: ${{ steps.read-codegen-info.outputs.CURRENT_MASTER_SHA }},
+            body: '[CI] [本次构建](/Enraged-Dun-Cookie-Development-Team/Ceobe_Proto/actions/runs/${{ github.run_id }})未能成功向${{ inputs.owner }}/${{ inputs.repo }}仓库推送子模块更新',
+            owner: context.repo.owner, repo: context.repo.repo,
+          });
+
+
+
