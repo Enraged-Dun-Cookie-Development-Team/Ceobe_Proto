@@ -1,5 +1,8 @@
 # Ceobe_Proto
 
+作为子模块使用时，为了使拉取主仓库代码时可以自动更新子模块，建议使用该命令将子模块设为自动更新`git config --global submodule.recurse true`  
+注意: Jetbrains家的IDE在拉取代码时强行加上`--recurse-submodules=no`然后每个子模块单独更新，可能出现子模块更新失败的问题，需要手动执行`git submodule update`进行更新
+
 ## GO
 
 - 依赖
