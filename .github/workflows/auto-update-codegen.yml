@@ -26,7 +26,7 @@ jobs:
         include:
           # 需要自动创建PR的仓库列表，repo是目标仓库，base_branch是目标分支，submodule_path是子模块在目标仓库的路径，need_job是依赖的代码生成任务
           - { repo: 'cookie-fetcher', base_branch: 'master', submodule_path: './ceobe_grpc', need_job: 'code-gen-ts' }
-          - { repo: 'cookie-analyzer', base_branch: 'master', submodule_path: './ceobe_grpc', need_job: 'code-gen-ts' }
+          #- { repo: 'cookie-analyzer', base_branch: 'master', submodule_path: './ceobe_grpc', need_job: 'code-gen-ts' }
     steps:
       - uses: actions/checkout@v3
       - name: 设置代码生成分支

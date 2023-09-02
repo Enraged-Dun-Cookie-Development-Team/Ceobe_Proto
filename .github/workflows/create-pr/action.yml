@@ -28,7 +28,9 @@ runs:
         ref: ${{ inputs.codegen_branch }}
     - name: 获取${{ inputs.codegen_branch }}分支保存的代码生成信息
       id: read-codegen-info
-      run: cat ./codegen_info >> "$GITHUB_OUTPUT"
+      run: |
+        cat ./codegen_info >> "$GITHUB_OUTPUT"
+        echo "CODEGEN_COMMIT_SHA=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       shell: bash
     - name: 生成commit对比链接
       id: commit-url
@@ -68,13 +70,15 @@ runs:
       uses: actions/github-script@v6
       env:
         PR_BODY: |
-          详细信息请参考：[原始Proto文件更改](/Enraged-Dun-Cookie-Development-Team/Ceobe_Proto/${{ steps.commit-url.outputs.result }})
+          详细信息请参考：
+          - [原始文件更改](/Enraged-Dun-Cookie-Development-Team/Ceobe_Proto/${{ steps.commit-url.outputs.result }})
+          - [代码生成结果变更](/Enraged-Dun-Cookie-Development-Team/Ceobe_Proto/commit/${{ steps.read-codegen-info.outputs.CODEGEN_COMMIT_SHA }})
   
           -----
           该PR由[CI](/Enraged-Dun-Cookie-Development-Team/Ceobe_Proto/actions/runs/${{ github.run_id }})自动创建  
           本次CI由@${{ github.triggering_actor }}触发运行
       with:
-        github-token: ${{ inputs.token }}
+        # github-token: ${{ inputs.token }}
         script: |
           github.rest.pulls.create({
             owner: '${{ inputs.owner }}',
