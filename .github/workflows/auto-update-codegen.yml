@@ -3,9 +3,9 @@ name: auto update codegen
 on:
   workflow_dispatch:
   push:
-    branches: [ master ]
-    paths:
-      - "**/*.proto"
+#    branches: [ master ]
+#    paths:
+#      - "**/*.proto"
 
 jobs:
   code-gen-ts:
