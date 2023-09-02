@@ -25,9 +25,10 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18 # node版本
-      - run: npm i @octokit/rest @octokit/auth-app
+      - run: npm i @octokit/rest @octokit/auth-app @actions/core
       - env:
           SCRIPT_CONTENT: |
+            import * as core from '@actions/core';
             import { Octokit } from "@octokit/rest";
             import { createAppAuth } from "@octokit/auth-app";
             import { writeFileSync } from "fs";
@@ -37,8 +38,8 @@ jobs:
             const installation = await appOctokit.rest.apps.getOrgInstallation({ org: '${{ github.repository_owner }}' });
             const result = await appOctokit.rest.apps.createInstallationAccessToken({ installation_id: installation.data.id });
             const token = result.data.token;
-            execSync(`echo "::add-mask::${token}"`);
-            writeFileSync(process.env.GITHUB_OUTPUT, `APP_TOKEN=${token}`, {flag: 'a'});
+            core.setSecret(token);
+            core.setOutput('APP_TOKEN', token);
         run: echo "$SCRIPT_CONTENT" >> generate-token.mjs
       - id: gen-app-token
         run: node generate-token.mjs
