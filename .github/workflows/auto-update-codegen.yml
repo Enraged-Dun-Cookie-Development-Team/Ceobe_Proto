@@ -26,10 +26,8 @@ jobs:
         with:
           node-version: 18 # node版本
       - run: npm i @octokit/rest @octokit/auth-app
-      - id: gen-app-token
-        env:
+      - env:
           SCRIPT_CONTENT: |
-            ::add-mask::
             const { Octokit } = require("@octokit/rest");
             const { createAppAuth } = require("@octokit/auth-app");
 
@@ -37,14 +35,17 @@ jobs:
             const installation = await appOctokit.rest.apps.getOrgInstallation({ org: ${{ github.repository_owner }} });
             const { token } = await appOctokit.auth({ type: "installation", installationId: installation.data.id, });
             const { writeFileSync } = require("fs");
-            writeFileSync(process.env.GITHUB_OUTPUT, `APP_TOKEN=::add-mask::${token}`, {flag: 'a'})
-        run: echo "::add-mask::$SCRIPT_CONTENT" >> generate-token.js
-      - run: node generate-token.js
+            console.log(`::add-mask::${token}`);
+            writeFileSync(process.env.GITHUB_OUTPUT, `APP_TOKEN=${token}`, {flag: 'a'})
+        run: |
+          echo "$SCRIPT_CONTENT" >> generate-token.js
+      - id: gen-app-token
+        run: node generate-token.js
 
   after-codegen:
     runs-on: ubuntu-latest
-    if: ${{ !cancelled() }}
     needs: [code-gen-ts, code-gen-py, code-gen-go, generate-token]
+    if: ${{ !cancelled() && needs.generate-token.result == 'success' }}
     strategy:
       # 避免并发请求触发Github的API速率限制
       max-parallel: 1
