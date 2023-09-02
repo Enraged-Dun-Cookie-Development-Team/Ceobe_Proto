@@ -46,7 +46,7 @@ jobs:
   after-codegen:
     runs-on: ubuntu-latest
     needs: [code-gen-ts, code-gen-py, code-gen-go, generate-token]
-    if: ${{ !cancelled() && needs.generate-token.result == 'success' }}
+    if: ${{ !cancelled() && needs.generate-token.result == 'success' && needs.generate-token.outputs.token != null }}
     strategy:
       # 避免并发请求触发Github的API速率限制
       max-parallel: 1
