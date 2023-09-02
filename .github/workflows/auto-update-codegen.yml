@@ -15,10 +15,33 @@ jobs:
   code-gen-go:
     uses: ./.github/workflows/code-gen-go.yml
 
+  # 生成自动化App的token
+  generate-token:
+    runs-on: ubuntu-latest
+    outputs:
+      token: ${{ steps.gen-app-token.APP_TOKEN }}
+    steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18 # node版本
+      - run: npm i @octokit/rest @octokit/auth-app
+      - id: gen-app-token
+        env:
+          SCRIPT_CONTENT: |
+            const { Octokit } = require("@octokit/rest");
+            const { createAppAuth } = require("@octokit/auth-app");
+
+            const appOctokit = new Octokit({ authStrategy: createAppAuth, auth: { appId: '${{ secrets.APP_ID }}', privateKey: `${{ secrets.APP_PRIVATE_KEY_53AIYSR }}` } });
+            const installation = await appOctokit.rest.apps.getOrgInstallation({ org: ${{ github.repository_owner }} });
+            const { token } = await appOctokit.auth({ type: "installation", installationId: installation.data.id, });
+            const { writeFileSync } = require("fs");
+            writeFileSync(process.env.GITHUB_OUTPUT, `APP_TOKEN=::add-mask::${token}`, {flag: 'a'})
+        run: echo "::add-mask::$SCRIPT_CONTENT" >> generate-token.js
+
   after-codegen:
     runs-on: ubuntu-latest
     if: ${{ !cancelled() }}
-    needs: [code-gen-ts, code-gen-py, code-gen-go]
+    needs: [code-gen-ts, code-gen-py, code-gen-go, generate-token]
     strategy:
       # 避免并发请求触发Github的API速率限制
       max-parallel: 1
@@ -58,7 +81,7 @@ jobs:
           base_branch: ${{ matrix.base_branch }}
           submodule_path: ${{ matrix.submodule_path }}
           codegen_branch: ${{ steps.get-codegen-branch.outputs.result }}
-          token: ${{ secrets.ACCESS_OTHER_REPO_TOKEN }}
+          token: ${{ generate-token.token }}
 
 
 

@@ -78,7 +78,7 @@ runs:
           该PR由[CI](/Enraged-Dun-Cookie-Development-Team/Ceobe_Proto/actions/runs/${{ github.run_id }})自动创建  
           本次CI由@${{ github.triggering_actor }}触发运行
       with:
-        # github-token: ${{ inputs.token }}
+        github-token: ${{ inputs.token }}
         script: |
           github.rest.pulls.create({
             owner: '${{ inputs.owner }}',
