@@ -44,7 +44,7 @@ jobs:
       - name: 加密token
         id: encrypt-app-token
         run: |
-          result = $(gpg --symmetric --batch --passphrase "${{ secrets.SECRET_PASSING_KEY }}" --output - <(echo "${{ steps.gen-app-token.outputs.APP_TOKEN }}") | base64 -w0)
+          result=$(gpg --symmetric --batch --passphrase "${{ secrets.SECRET_PASSING_KEY }}" --output - <(echo "${{ steps.gen-app-token.outputs.APP_TOKEN }}") | base64 -w0)
           echo "::set-output name=ENCRYPTED_TOKEN::$result"
 
   after-codegen:
@@ -86,7 +86,7 @@ jobs:
         if: ${{ needs[matrix.need_job].outputs.pushed }} == 'true'
         id: decrypt-app-token
         run: |
-          result = $(gpg --decrypt --quiet --batch --passphrase "SECRET" --output - <(echo "$encrypted_value" | base64 --decode))
+          result=$(gpg --decrypt --quiet --batch --passphrase "SECRET" --output - <(echo "$encrypted_value" | base64 --decode))
           echo "::add-mask::$result"
           echo "::set-output name=DECRYPTED_TOKEN::$result"
       - name: 尝试创建PR
