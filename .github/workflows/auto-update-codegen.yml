@@ -31,15 +31,14 @@ jobs:
             import { Octokit } from "@octokit/rest";
             import { createAppAuth } from "@octokit/auth-app";
             import { writeFileSync } from "fs";
+            import { execSync } from "child_process";
 
             const appOctokit = new Octokit({ authStrategy: createAppAuth, auth: { appId: '${{ secrets.APP_ID }}', privateKey: `${{ secrets.APP_PRIVATE_KEY_53AIYSR }}` } });
             const installation = await appOctokit.rest.apps.getOrgInstallation({ org: '${{ github.repository_owner }}' });
             const { token } = await appOctokit.auth({ type: "installation", installationId: installation.data.id, });
-            console.log(`::add-mask::${token}`);
+            execSync(`echo "::add-mask::${token}"`);
             writeFileSync(process.env.GITHUB_OUTPUT, `APP_TOKEN=${token}`, {flag: 'a'});
-        run: |
-          echo "::add-mask::$SCRIPT_CONTENT"
-          echo "$SCRIPT_CONTENT" >> generate-token.mjs
+        run: echo "$SCRIPT_CONTENT" >> generate-token.mjs
       - id: gen-app-token
         run: node generate-token.mjs
 

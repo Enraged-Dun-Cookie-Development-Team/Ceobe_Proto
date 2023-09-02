@@ -48,9 +48,9 @@ runs:
             return 'commit/' + current_master_sha;
           }
     - name: 从${{ inputs.owner }}/${{ inputs.repo }}仓库检出${{ inputs.base_branch }}分支
-      working-directory: ./create-pr/${{ inputs.repo }}
       uses: actions/checkout@v3
       with:
+        path: ./create-pr/${{ inputs.repo }}
         token: ${{ inputs.token }}
         repository: ${{ inputs.owner }}/${{ inputs.repo }}
         ref: ${{ inputs.base_branch }}
@@ -63,10 +63,10 @@ runs:
       run: git submodule update --init --remote ${{ inputs.submodule_path }}
       shell: bash
     - name: 提交commit
-      working-directory: ./create-pr/${{ inputs.repo }}
       id: commit-submodule-update
       uses: EndBug/add-and-commit@v9
       with:
+        cwd: ./create-pr/${{ inputs.repo }}
         github_token: ${{ inputs.token }}
         default_author: github_actions
         message: '[CI] update gRPC submodule'
