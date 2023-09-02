@@ -33,7 +33,7 @@ jobs:
             import { writeFileSync } from "fs";
             import { execSync } from "child_process";
 
-            const appOctokit = new Octokit({ authStrategy: createAppAuth, auth: { appId: '${{ secrets.APP_ID }}', privateKey: `${{ secrets.APP_PRIVATE_KEY_53AIYSR }}` } });
+            const appOctokit = new Octokit({ log: console, authStrategy: createAppAuth, auth: { appId: '${{ secrets.APP_ID }}', privateKey: `${{ secrets.APP_PRIVATE_KEY_53AIYSR }}` } });
             const installation = await appOctokit.rest.apps.getOrgInstallation({ org: '${{ github.repository_owner }}' });
             const result = await appOctokit.rest.apps.createInstallationAccessToken({ installation_id: installation.data.id });
             const token = result.data.token;
