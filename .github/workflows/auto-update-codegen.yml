@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [code-gen-ts, code-gen-py, code-gen-go]
     outputs:
-      token: ${{ steps.gen-app-token.outputs.APP_TOKEN }}
+      ENCRYPTED_TOKEN: ${{ steps.encrypt-app-token.outputs.ENCRYPTED_TOKEN }}
     steps:
       - uses: actions/setup-node@v3
         with:
@@ -31,7 +31,7 @@ jobs:
             import * as core from '@actions/core';
             import { Octokit } from "@octokit/rest";
             import { createAppAuth } from "@octokit/auth-app";
-
+            
             const appOctokit = new Octokit({ authStrategy: createAppAuth, auth: { appId: '${{ secrets.APP_ID }}', privateKey: `${{ secrets.APP_PRIVATE_KEY_53AIYSR }}` } });
             const installation = await appOctokit.rest.apps.getOrgInstallation({ org: '${{ github.repository_owner }}' });
             const result = await appOctokit.rest.apps.createInstallationAccessToken({ installation_id: installation.data.id });
@@ -41,6 +41,11 @@ jobs:
         run: echo "$SCRIPT_CONTENT" >> generate-token.mjs
       - id: gen-app-token
         run: node generate-token.mjs
+      - name: 加密token
+        id: encrypt-app-token
+        run: |
+          result = $(gpg --symmetric --batch --passphrase "${{ secrets.SECRET_PASSING_KEY }}" --output - <(echo "${{ steps.gen-app-token.outputs.APP_TOKEN }}") | base64 -w0)
+          echo "::set-output name=ENCRYPTED_TOKEN::$result"
 
   after-codegen:
     runs-on: ubuntu-latest
@@ -77,15 +82,22 @@ jobs:
             } else {
               console.log('${{ matrix.need_job }}未能成功推送代码生成更新，不执行创建PR的步骤');
             }
-      - name: 尝试创建PR
+      - name: 解密token
         if: ${{ needs[matrix.need_job].outputs.pushed }} == 'true'
+        id: decrypt-app-token
+        run: |
+          result = $(gpg --decrypt --quiet --batch --passphrase "SECRET" --output - <(echo "$encrypted_value" | base64 --decode))
+          echo "::add-mask::$result"
+          echo "::set-output name=DECRYPTED_TOKEN::$result"
+      - name: 尝试创建PR
+        if: ${{ success() && ${{ needs[matrix.need_job].outputs.pushed }} == 'true' }}
         uses: ./.github/workflows/create-pr
         with:
           repo: ${{ matrix.repo }}
           base_branch: ${{ matrix.base_branch }}
           submodule_path: ${{ matrix.submodule_path }}
           codegen_branch: ${{ steps.get-codegen-branch.outputs.result }}
-          token: ${{ needs.generate-token.outputs.token }}
+          token: ${{ steps.decrypt-app-token.outputs.DECRYPTED_TOKEN }}
 
 
 
