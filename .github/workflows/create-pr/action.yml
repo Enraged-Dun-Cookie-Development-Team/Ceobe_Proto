@@ -25,9 +25,11 @@ runs:
     - name: 从当前仓库检出${{ inputs.codegen_branch }}分支
       uses: actions/checkout@v3
       with:
+        path: ./create-pr/${{ inputs.codegen_branch }}
         ref: ${{ inputs.codegen_branch }}
     - name: 获取${{ inputs.codegen_branch }}分支保存的代码生成信息
       id: read-codegen-info
+      working-directory: ./create-pr/${{ inputs.codegen_branch }}
       run: |
         cat ./codegen_info >> "$GITHUB_OUTPUT"
         echo "CODEGEN_COMMIT_SHA=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
@@ -46,18 +48,22 @@ runs:
             return 'commit/' + current_master_sha;
           }
     - name: 从${{ inputs.owner }}/${{ inputs.repo }}仓库检出${{ inputs.base_branch }}分支
+      working-directory: ./create-pr/${{ inputs.repo }}
       uses: actions/checkout@v3
       with:
         token: ${{ inputs.token }}
         repository: ${{ inputs.owner }}/${{ inputs.repo }}
         ref: ${{ inputs.base_branch }}
-    - name: 创建新分支
+    - name: 创建新分支.
+      working-directory: ./create-pr/${{ inputs.repo }}
       run: git checkout -b update-grpc-build${{ github.run_number }}
       shell: bash
     - name: 更新子模块：${{ inputs.submodule_path }}
+      working-directory: ./create-pr/${{ inputs.repo }}
       run: git submodule update --init --remote ${{ inputs.submodule_path }}
       shell: bash
     - name: 提交commit
+      working-directory: ./create-pr/${{ inputs.repo }}
       id: commit-submodule-update
       uses: EndBug/add-and-commit@v9
       with:
@@ -99,7 +105,6 @@ runs:
             body: '[CI] [本次构建](/Enraged-Dun-Cookie-Development-Team/Ceobe_Proto/actions/runs/${{ github.run_id }})未能成功向${{ inputs.owner }}/${{ inputs.repo }}仓库推送子模块更新',
             owner: context.repo.owner, repo: context.repo.repo,
           });
-    - name: 重新检出触发工作流的分支，避免工作流执行异常
-      uses: actions/checkout@v3
+
 
 
