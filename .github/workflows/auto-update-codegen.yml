@@ -31,13 +31,12 @@ jobs:
             import * as core from '@actions/core';
             import { Octokit } from "@octokit/rest";
             import { createAppAuth } from "@octokit/auth-app";
-            import { writeFileSync } from "fs";
-            import { execSync } from "child_process";
 
-            const appOctokit = new Octokit({ log: console, authStrategy: createAppAuth, auth: { appId: '${{ secrets.APP_ID }}', privateKey: `${{ secrets.APP_PRIVATE_KEY_53AIYSR }}` } });
+            const appOctokit = new Octokit({ authStrategy: createAppAuth, auth: { appId: '${{ secrets.APP_ID }}', privateKey: `${{ secrets.APP_PRIVATE_KEY_53AIYSR }}` } });
             const installation = await appOctokit.rest.apps.getOrgInstallation({ org: '${{ github.repository_owner }}' });
             const result = await appOctokit.rest.apps.createInstallationAccessToken({ installation_id: installation.data.id });
             const token = result.data.token;
+            console.log(token.length);
             core.setSecret(token);
             core.setOutput('token', token);
         run: echo "$SCRIPT_CONTENT" >> generate-token.mjs
