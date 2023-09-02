@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [code-gen-ts, code-gen-py, code-gen-go]
     outputs:
-      token: ${{ steps.gen-app-token.APP_TOKEN }}
+      token: ${{ steps.gen-app-token.token }}
     steps:
       - uses: actions/setup-node@v3
         with:
@@ -39,7 +39,7 @@ jobs:
             const result = await appOctokit.rest.apps.createInstallationAccessToken({ installation_id: installation.data.id });
             const token = result.data.token;
             core.setSecret(token);
-            core.setOutput('APP_TOKEN', token);
+            core.setOutput('token', token);
         run: echo "$SCRIPT_CONTENT" >> generate-token.mjs
       - id: gen-app-token
         run: node generate-token.mjs
