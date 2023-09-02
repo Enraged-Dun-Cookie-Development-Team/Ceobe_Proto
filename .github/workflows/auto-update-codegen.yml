@@ -81,7 +81,7 @@ jobs:
           base_branch: ${{ matrix.base_branch }}
           submodule_path: ${{ matrix.submodule_path }}
           codegen_branch: ${{ steps.get-codegen-branch.outputs.result }}
-          token: ${{ needs.generate-token.token }}
+          token: ${{ needs.generate-token.outputs.token }}
 
 
 
