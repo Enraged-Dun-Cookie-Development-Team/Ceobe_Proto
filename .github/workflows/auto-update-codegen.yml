@@ -30,15 +30,15 @@ jobs:
           SCRIPT_CONTENT: |
             const { Octokit } = require("@octokit/rest");
             const { createAppAuth } = require("@octokit/auth-app");
+            const { writeFileSync } = require("fs");
 
             const appOctokit = new Octokit({ authStrategy: createAppAuth, auth: { appId: '${{ secrets.APP_ID }}', privateKey: `${{ secrets.APP_PRIVATE_KEY_53AIYSR }}` } });
             const installation = await appOctokit.rest.apps.getOrgInstallation({ org: ${{ github.repository_owner }} });
-            const { token } = await appOctokit.auth({ type: "installation", installationId: installation.data.id, });
-            const { writeFileSync } = require("fs");
-            console.log(`::add-mask::${token}`);
-            writeFileSync(process.env.GITHUB_OUTPUT, `APP_TOKEN=${token}`, {flag: 'a'})
-        run: |
-          echo "$SCRIPT_CONTENT" >> generate-token.js
+            appOctokit.auth({ type: "installation", installationId: installation.data.id, }).then(({ token }) => {
+              console.log(`::add-mask::${token}`);
+              writeFileSync(process.env.GITHUB_OUTPUT, `APP_TOKEN=${token}`, {flag: 'a'});
+            });
+        run: echo "$SCRIPT_CONTENT" >> generate-token.js
       - id: gen-app-token
         run: node generate-token.js
 
