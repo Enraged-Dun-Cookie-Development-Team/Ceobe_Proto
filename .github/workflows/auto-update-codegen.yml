@@ -2,10 +2,15 @@ name: auto update codegen
 
 on:
   workflow_dispatch:
+    inputs:
+      force_try_create_pr:
+        description: 即使代码生成结果没有发生变化也尝试推送PR
+        type: boolean
+        default: false
   push:
-#    branches: [ master ]
-#    paths:
-#      - "**/*.proto"
+    branches: [ master ]
+    paths:
+      - "**/*.proto"
 
 jobs:
   code-gen-ts:
@@ -58,7 +63,7 @@ jobs:
         include:
           # 需要自动创建PR的仓库列表，repo是目标仓库，base_branch是目标分支，submodule_path是子模块在目标仓库的路径，need_job是依赖的代码生成任务
           - { repo: 'cookie-fetcher', base_branch: 'master', submodule_path: './ceobe_grpc', need_job: 'code-gen-ts' }
-          #- { repo: 'cookie-analyzer', base_branch: 'master', submodule_path: './ceobe_grpc', need_job: 'code-gen-ts' }
+          - { repo: 'cookie-analyzer', base_branch: 'master', submodule_path: './ceobe_grpc', need_job: 'code-gen-ts' }
     steps:
       - uses: actions/checkout@v3
       - name: 设置代码生成分支
@@ -83,7 +88,7 @@ jobs:
               console.log('${{ matrix.need_job }}未能成功推送代码生成更新，不执行创建PR的步骤');
             }
       - name: 为创建PR的任务解密token
-        if: ${{ success() && (needs[matrix.need_job].outputs.pushed == 'true' || true) }}
+        if: ${{ success() && (needs[matrix.need_job].outputs.pushed == 'true' || inputs.force_try_create_pr) }}
         id: decrypt-app-token
         run: |
           result=$(gpg --decrypt --quiet --batch --passphrase "${{ secrets.SECRET_PASSING_KEY }}" --output - <(echo "${{ needs.generate-token.outputs.ENCRYPTED_TOKEN }}" | base64 --decode))
