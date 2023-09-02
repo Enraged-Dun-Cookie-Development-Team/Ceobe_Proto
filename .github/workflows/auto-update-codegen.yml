@@ -82,15 +82,15 @@ jobs:
             } else {
               console.log('${{ matrix.need_job }}未能成功推送代码生成更新，不执行创建PR的步骤');
             }
-      - name: 解密token
-        if: ${{ needs[matrix.need_job].outputs.pushed }} == 'true'
+      - name: 为创建PR的任务解密token
+        if: ${{ success() && (needs[matrix.need_job].outputs.pushed == 'true' || true) }}
         id: decrypt-app-token
         run: |
           result=$(gpg --decrypt --quiet --batch --passphrase "${{ secrets.SECRET_PASSING_KEY }}" --output - <(echo "${{ needs.generate-token.outputs.ENCRYPTED_TOKEN }}" | base64 --decode))
           echo "::add-mask::$result"
           echo "DECRYPTED_TOKEN=$result" >> $GITHUB_OUTPUT
       - name: 尝试创建PR
-        if: ${{ success() && needs[matrix.need_job].outputs.pushed == 'true' }}
+        if: steps.decrypt-app-token.outcome == 'success'
         uses: ./.github/workflows/create-pr
         with:
           repo: ${{ matrix.repo }}
