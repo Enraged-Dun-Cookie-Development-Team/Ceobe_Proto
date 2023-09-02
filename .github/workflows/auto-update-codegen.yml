@@ -28,19 +28,18 @@ jobs:
       - run: npm i @octokit/rest @octokit/auth-app
       - env:
           SCRIPT_CONTENT: |
-            const { Octokit } = require("@octokit/rest");
-            const { createAppAuth } = require("@octokit/auth-app");
-            const { writeFileSync } = require("fs");
+            import { Octokit } from "@octokit/rest";
+            import { createAppAuth } from "@octokit/auth-app";
+            import { writeFileSync } from "fs";
 
             const appOctokit = new Octokit({ authStrategy: createAppAuth, auth: { appId: '${{ secrets.APP_ID }}', privateKey: `${{ secrets.APP_PRIVATE_KEY_53AIYSR }}` } });
             const installation = await appOctokit.rest.apps.getOrgInstallation({ org: ${{ github.repository_owner }} });
-            appOctokit.auth({ type: "installation", installationId: installation.data.id, }).then(({ token }) => {
-              console.log(`::add-mask::${token}`);
-              writeFileSync(process.env.GITHUB_OUTPUT, `APP_TOKEN=${token}`, {flag: 'a'});
-            });
-        run: echo "$SCRIPT_CONTENT" >> generate-token.js
+            const { token } = await appOctokit.auth({ type: "installation", installationId: installation.data.id, });
+            console.log(`::add-mask::${token}`);
+            writeFileSync(process.env.GITHUB_OUTPUT, `APP_TOKEN=${token}`, {flag: 'a'});
+        run: echo "$SCRIPT_CONTENT" >> generate-token.mjs
       - id: gen-app-token
-        run: node generate-token.js
+        run: node generate-token.mjs
 
   after-codegen:
     runs-on: ubuntu-latest
