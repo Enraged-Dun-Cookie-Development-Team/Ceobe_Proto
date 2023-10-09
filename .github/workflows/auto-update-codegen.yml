@@ -72,7 +72,7 @@ jobs:
               console.log('${{ matrix.need_job }}未能成功推送代码生成更新，不执行创建PR的步骤');
             }
       - name: 为创建PR的任务解密token
-        if: ${{ success() && (needs[matrix.need_job].outputs.pushed == 'true' || inputs.force_try_create_pr) }}
+        if: ${{ success() && (needs[matrix.need_job].outputs.pushed == 'true' || matrix.need_job == 'generate-token' || inputs.force_try_create_pr) }}
         id: decrypt-app-token
         uses: Enraged-Dun-Cookie-Development-Team/Ceobe-Github-Bot/actions/decrypt-secret@master
         with:
