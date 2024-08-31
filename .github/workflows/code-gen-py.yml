@@ -61,7 +61,7 @@ jobs:
       - name: generate proto code
         run:
           mkdir -v pb &&
-          python -m grpc_tools.protoc -ICeobe_Proto/pb=../../protos --python_out=./pb --grpc_python_out=./pb ./protos/*.proto
+          python -m grpc_tools.protoc -ICeobe_Proto/pb=../../protos --python_out=./pb --grpc_python_out=./pb ../../protos/*.proto
         working-directory: ./master
 
       # 清理 py code gen 中的Py文件和workflow文件
