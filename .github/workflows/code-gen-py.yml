@@ -60,8 +60,8 @@ jobs:
       # 在master 中生成代码
       - name: generate proto code
         run:
-          mkdir -v -p /Ceobe_Proto/pb &&
-          python -m grpc_tools.protoc -I./Ceobe_Proto/pb=./protos --python_out=. --grpc_python_out=. ./protos/*.proto
+          mkdir -v pb &&
+          python -m grpc_tools.protoc -ICeobe_Proto/pb=./protos --python_out=. --grpc_python_out=. ./protos/*.proto
         working-directory: ./master
 
       # 清理 py code gen 中的Py文件和workflow文件
@@ -79,6 +79,7 @@ jobs:
       - name: copy code gen
         run:
           mkdir -v ./py-code-gen/pb &&
+          ls -l ./master &&
           cp -vr ./master/Ceobe_Proto/pb/* ./py-code-gen/pb/
 
       - name: write codegen info
