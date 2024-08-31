@@ -60,7 +60,7 @@ jobs:
       # 在master 中生成代码
       - name: generate proto code
         run:
-          mkdir -v Ceobe_Proto/pb &&
+          mkdir -v /Ceobe_Proto/pb &&
           python -m grpc_tools.protoc -I./Ceobe_Proto/pb=./protos --python_out=. --grpc_python_out=. ./protos/*.proto
         working-directory: ./master
 
