@@ -79,7 +79,6 @@ jobs:
       - name: copy code gen
         run:
           mkdir -v ./py-code-gen/pb &&
-          ls -l ./master &&
           cp -vr ./master/Ceobe_Proto/pb/* ./py-code-gen/pb/
 
       - name: write codegen info
